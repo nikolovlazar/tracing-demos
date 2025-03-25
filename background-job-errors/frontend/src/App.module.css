@@ -1,0 +1,203 @@
+.App {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.header {
+  background-color: #ffffff;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 1.8rem;
+}
+
+.main {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.metricCard {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.metricCard h3 {
+  margin: 0 0 1rem 0;
+  color: #4a5568;
+  font-size: 1rem;
+}
+
+.metricValue {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #2d3748;
+  margin-bottom: 0.5rem;
+}
+
+.metricChange {
+  color: #48bb78;
+  font-size: 0.9rem;
+}
+
+.reportSection {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.reportSection h2 {
+  margin: 0 0 1rem 0;
+  color: #2d3748;
+}
+
+.reportSection p {
+  color: #4a5568;
+  margin-bottom: 1.5rem;
+}
+
+.generateButton {
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.generateButton:hover {
+  background-color: #3182ce;
+}
+
+.generateButton:disabled {
+  background-color: #a0aec0;
+  cursor: not-allowed;
+}
+
+.generateButton.loading {
+  opacity: 0.8;
+  cursor: wait;
+}
+
+.response {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f7fafc;
+  border-radius: 6px;
+  border-left: 4px solid #4299e1;
+}
+
+.response p {
+  margin: 0 0 0.5rem 0;
+  color: #2d3748;
+}
+
+.response small {
+  color: #718096;
+}
+
+.tableSection {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  margin-top: 2rem;
+}
+
+.tableSection h2 {
+  margin: 0 0 1.5rem 0;
+  color: #2d3748;
+}
+
+.tableContainer {
+  overflow-x: auto;
+}
+
+.dataTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.dataTable th,
+.dataTable td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.dataTable th {
+  background-color: #f7fafc;
+  font-weight: 600;
+  color: #4a5568;
+}
+
+.dataTable tr:hover {
+  background-color: #f7fafc;
+}
+
+.status {
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.completed {
+  background-color: #c6f6d5;
+  color: #2f855a;
+}
+
+.processing {
+  background-color: #bee3f8;
+  color: #2b6cb0;
+}
+
+.failed {
+  background-color: #fed7d7;
+  color: #c53030;
+}
+
+.reportOptions {
+  margin-bottom: 1.5rem;
+}
+
+.reportOptions label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.reportOptions select {
+  width: 100%;
+  max-width: 300px;
+  padding: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background-color: white;
+  color: #2d3748;
+  font-size: 1rem;
+}
+
+.reportOptions select:disabled {
+  background-color: #edf2f7;
+  cursor: not-allowed;
+}

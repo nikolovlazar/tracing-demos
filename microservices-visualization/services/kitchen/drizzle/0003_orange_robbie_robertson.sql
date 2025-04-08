@@ -1,0 +1,1 @@
+ALTER TABLE "kitchen_orders" DROP COLUMN "customer_id";

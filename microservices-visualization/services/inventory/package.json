@@ -1,0 +1,27 @@
+{
+  "name": "inventory-service",
+  "version": "1.0.0",
+  "description": "Inventory service for food delivery system",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/db/migrate.ts",
+    "db:seed": "bun run src/db/seed.ts"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.7",
+    "consul": "^2.0.1",
+    "drizzle-orm": "^0.41.0",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.7",
+    "@types/bun": "latest",
+    "@types/consul": "^2.0.0",
+    "bun-types": "latest",
+    "drizzle-kit": "^0.30.6",
+    "typescript": "^5.3.3"
+  }
+}

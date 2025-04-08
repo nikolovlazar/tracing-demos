@@ -1,0 +1,25 @@
+{
+  "name": "order-service",
+  "version": "1.0.0",
+  "description": "Order service for food delivery system",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run --watch src/index.ts",
+    "start": "bun run src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "bun run src/db/migrate.ts"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.7",
+    "drizzle-orm": "^0.41.0",
+    "postgres": "^3.4.5",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.7",
+    "@types/bun": "latest",
+    "bun-types": "latest",
+    "drizzle-kit": "^0.30.6",
+    "typescript": "^5.3.3"
+  }
+}

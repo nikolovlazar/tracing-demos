@@ -1,0 +1,1 @@
+ALTER TABLE "kitchen_orders" ADD COLUMN "delivery_address" text NOT NULL;

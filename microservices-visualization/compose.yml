@@ -1,0 +1,261 @@
+services:
+  app:
+    container_name: app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        - API_URL=http://kong:8000
+    ports:
+      - '3000:3000'
+    depends_on:
+      kong:
+        condition: service_healthy
+    environment:
+      - API_URL=http://kong:8000
+    networks:
+      - frontend-network
+
+  order-service:
+    build:
+      context: ./services/order
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    environment:
+      - PORT=8080
+      - DB_URL=postgres://app_user:app_password@postgres:5432/orders
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+      - RABBITMQ_EXCHANGE=order_events
+      - RABBITMQ_QUEUE=order_service_events
+      - CONSUL_HTTP_ADDR=http://consul:8500
+      - CONSUL_SERVICE_NAME=order-service
+      - CONSUL_SERVICE_PORT=8080
+      - CONSUL_SERVICE_CHECK_HTTP=/health
+      - CONSUL_SERVICE_CHECK_INTERVAL=10s
+      - CONSUL_SERVICE_CHECK_TIMEOUT=5s
+    networks:
+      - backend-network
+    volumes:
+      - ./services/order:/app
+    working_dir: /app
+    command: ['bun', 'run', 'dev']
+    deploy:
+      replicas: 5
+
+  inventory-service:
+    build:
+      context: ./services/inventory
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    environment:
+      - PORT=8081
+      - DB_URL=postgres://app_user:app_password@postgres:5432/inventory
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+      - RABBITMQ_EXCHANGE=order_events
+      - RABBITMQ_QUEUE=inventory_service_events
+      - CONSUL_HTTP_ADDR=http://consul:8500
+      - CONSUL_SERVICE_NAME=inventory-service
+      - CONSUL_SERVICE_PORT=8081
+      - CONSUL_SERVICE_CHECK_HTTP=/health
+      - CONSUL_SERVICE_CHECK_INTERVAL=10s
+      - CONSUL_SERVICE_CHECK_TIMEOUT=5s
+    networks:
+      - backend-network
+    volumes:
+      - ./services/inventory:/app
+    working_dir: /app
+    command: ['bun', 'run', 'dev']
+    deploy:
+      replicas: 3
+
+  kitchen-service:
+    build:
+      context: ./services/kitchen
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    environment:
+      - PORT=8082
+      - DB_URL=postgres://app_user:app_password@postgres:5432/kitchen
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+      - RABBITMQ_EXCHANGE=order_events
+      - RABBITMQ_QUEUE=kitchen_service_events
+      - CONSUL_HTTP_ADDR=http://consul:8500
+      - CONSUL_SERVICE_NAME=kitchen-service
+      - CONSUL_SERVICE_PORT=8082
+      - CONSUL_SERVICE_CHECK_HTTP=/health
+      - CONSUL_SERVICE_CHECK_INTERVAL=10s
+      - CONSUL_SERVICE_CHECK_TIMEOUT=5s
+    networks:
+      - backend-network
+    volumes:
+      - ./services/kitchen:/app
+    working_dir: /app
+    command: ['bun', 'run', 'dev']
+    deploy:
+      replicas: 7
+
+  delivery-service:
+    build:
+      context: ./services/delivery
+      dockerfile: Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    environment:
+      - PORT=8083
+      - DB_URL=postgres://app_user:app_password@postgres:5432/deliveries
+      - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
+      - RABBITMQ_EXCHANGE=order_events
+      - RABBITMQ_QUEUE=delivery_service_events
+      - CONSUL_HTTP_ADDR=http://consul:8500
+      - CONSUL_SERVICE_NAME=delivery-service
+      - CONSUL_SERVICE_PORT=8083
+      - CONSUL_SERVICE_CHECK_HTTP=/health
+      - CONSUL_SERVICE_CHECK_INTERVAL=10s
+      - CONSUL_SERVICE_CHECK_TIMEOUT=5s
+    networks:
+      - backend-network
+    volumes:
+      - ./services/delivery:/app
+    working_dir: /app
+    command: ['bun', 'run', 'dev']
+    deploy:
+      replicas: 5
+
+  postgres:
+    container_name: postgres
+    image: postgres:17.4
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=ordersdb
+      - POSTGRES_MULTIPLE_DATABASES=orders,inventory,kitchen,deliveries,kong
+      - POSTGRES_USER_APP=app_user
+      - POSTGRES_PASSWORD_APP=app_password
+      - POSTGRES_USER_KONG=kong
+      - POSTGRES_PASSWORD_KONG=kong
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - ./config/postgres/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
+    networks:
+      - backend-network
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U postgres -d orders && pg_isready -U postgres -d inventory && pg_isready -U postgres -d kitchen && pg_isready -U postgres -d deliveries && pg_isready -U postgres -d kong',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+    networks:
+      - backend-network
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  kong:
+    container_name: kong
+    image: kong:3.6
+    depends_on:
+      postgres:
+        condition: service_healthy
+      consul:
+        condition: service_healthy
+    environment:
+      KONG_DATABASE: off
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yml
+      KONG_PROXY_LISTEN: 0.0.0.0:8000
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_NGINX_HTTP_LOG_FORMAT: >
+        log_format custom_format '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent "$http_referer" "$http_user_agent" upstream=$upstream_addr request_uri=$request_uri upstream_uri=$upstream_uri host=$host'
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+      KONG_DNS_ORDER: LAST,A,CNAME
+      KONG_DNS_RESOLVER: ${CONSUL_IP}:8600
+    ports:
+      - '8000:8000'
+      - '8001:8001'
+      - '8002:8002'
+      - '8003:8003'
+      - '8004:8004'
+      - '8443:8443'
+      - '8444:8444'
+      - '8445:8445'
+    volumes:
+      - ./config/kong/config.yml:/usr/local/kong/declarative/kong.yml
+      - ./config/kong/init.sh:/docker-entrypoint.d/init.sh
+    networks:
+      - frontend-network
+      - backend-network
+    healthcheck:
+      test: ['CMD', 'kong', 'health']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  consul:
+    container_name: consul
+    image: hashicorp/consul:1.20.0
+    ports:
+      - '8500:8500'
+      - '8600:8600/tcp'
+      - '8600:8600/udp'
+    networks:
+      - backend-network
+    command: 'agent -server -ui -node=consul -bootstrap-expect=1 -client=0.0.0.0'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://consul:8500/v1/status/leader']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  frontend-network:
+    driver: bridge
+  backend-network:
+    driver: bridge

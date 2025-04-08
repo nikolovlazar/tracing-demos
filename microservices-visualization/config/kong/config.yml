@@ -1,0 +1,169 @@
+_format_version: '3.0'
+_transform: true
+
+upstreams:
+  - name: order-service-upstream
+    algorithm: least-connections
+    healthchecks:
+      active:
+        type: http
+        http_path: /health
+        timeout: 1
+        concurrency: 10
+        healthy:
+          interval: 5
+          http_statuses: [200, 204]
+          successes: 2
+        unhealthy:
+          interval: 5
+          http_statuses: [429, 404, 500, 501, 502, 503, 504, 505]
+          tcp_failures: 2
+          timeouts: 3
+          http_failures: 2
+    targets:
+      - target: order-service.service.consul:8080
+        weight: 100
+
+  - name: kitchen-service-upstream
+    algorithm: least-connections
+    healthchecks:
+      active:
+        type: http
+        http_path: /health
+        timeout: 1
+        concurrency: 10
+        healthy:
+          interval: 5
+          http_statuses: [200, 204]
+          successes: 2
+        unhealthy:
+          interval: 5
+          http_statuses: [429, 404, 500, 501, 502, 503, 504, 505]
+          tcp_failures: 2
+          timeouts: 3
+          http_failures: 2
+    targets:
+      - target: kitchen-service.service.consul:8082
+        weight: 100
+
+  - name: inventory-service-upstream
+    algorithm: least-connections
+    healthchecks:
+      active:
+        type: http
+        http_path: /health
+        timeout: 1
+        concurrency: 10
+        healthy:
+          interval: 5
+          http_statuses: [200, 204]
+          successes: 2
+        unhealthy:
+          interval: 5
+          http_statuses: [429, 404, 500, 501, 502, 503, 504, 505]
+          tcp_failures: 2
+          timeouts: 3
+          http_failures: 2
+    targets:
+      - target: inventory-service.service.consul:8081
+        weight: 100
+
+  - name: delivery-service-upstream
+    algorithm: least-connections
+    healthchecks:
+      active:
+        type: http
+        http_path: /health
+        timeout: 1
+        concurrency: 10
+        healthy:
+          interval: 5
+          http_statuses: [200, 204]
+          successes: 2
+        unhealthy:
+          interval: 5
+          http_statuses: [429, 404, 500, 501, 502, 503, 504, 505]
+          tcp_failures: 2
+          timeouts: 3
+          http_failures: 2
+    targets:
+      - target: delivery-service.service.consul:8083
+        weight: 100
+
+services:
+  - name: order-service
+    url: http://order-service-upstream
+    routes:
+      - name: order-service-routes
+        paths:
+          - /orders
+          - /orders/.*
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+    plugins:
+      - name: cors
+      - name: rate-limiting
+        config:
+          minute: 60
+          policy: local
+
+  - name: kitchen-service
+    url: http://kitchen-service-upstream
+    routes:
+      - name: kitchen-service-routes
+        paths:
+          - /kitchen/orders
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+    plugins:
+      - name: cors
+      - name: rate-limiting
+        config:
+          minute: 60
+          policy: local
+
+  - name: inventory-service
+    url: http://inventory-service-upstream
+    routes:
+      - name: inventory-service-routes
+        paths:
+          - /inventory
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+    plugins:
+      - name: cors
+      - name: rate-limiting
+        config:
+          minute: 60
+          policy: local
+
+  - name: delivery-service
+    url: http://delivery-service-upstream
+    routes:
+      - name: delivery-service-routes
+        paths:
+          - /deliveries
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+    plugins:
+      - name: cors
+      - name: rate-limiting
+        config:
+          minute: 60
+          policy: local

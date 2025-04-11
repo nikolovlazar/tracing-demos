@@ -72,7 +72,6 @@ export class OrderEventService {
       }
 
       await this.repository.update(orderId, {
-        ...order,
         status: 'delivered',
         actualDeliveryTime,
       });

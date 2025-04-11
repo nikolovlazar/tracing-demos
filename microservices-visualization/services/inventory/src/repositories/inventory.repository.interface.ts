@@ -1,4 +1,4 @@
-import { InventoryItem, NewInventoryItem } from '../db/schema';
+import type { InventoryItem, NewInventoryItem } from '../db/schema';
 
 export interface IInventoryRepository {
   create(item: NewInventoryItem): Promise<InventoryItem>;

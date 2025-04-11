@@ -1,27 +1,31 @@
-FROM node:20-slim AS development-dependencies-env
-COPY . /app
+# Build stage
+FROM node:22-slim AS builder
 WORKDIR /app
-RUN npm install
 
-FROM node:20-slim AS production-dependencies-env
-COPY ./package.json package-lock.json /app/
-WORKDIR /app
-RUN npm install --omit=dev
-
-FROM node:20-slim AS build-env
+COPY package.json package-lock.json ./
+COPY tsconfig.json ./
 COPY . /app/
-COPY --from=development-dependencies-env /app/node_modules /app/node_modules
-WORKDIR /app
-# Pass the API URL as a build argument
+
 ARG API_URL
 ENV API_URL=$API_URL
-RUN npm run build
 
-FROM node:20-slim
-COPY ./package.json package-lock.json /app/
-COPY --from=production-dependencies-env /app/node_modules /app/node_modules
-COPY --from=build-env /app/build /app/build
-# Pass the API URL as an environment variable
-ENV API_URL=http://kong:8000
+ARG SENTRY_DSN
+ENV SENTRY_DSN=$SENTRY_DSN
+
+ARG VITE_SENTRY_DSN
+ENV VITE_SENTRY_DSN=$VITE_SENTRY_DSN
+
+ARG SENTRY_AUTH_TOKEN
+
+RUN npm install --frozen-lockfile
+RUN SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN} npm run build
+
+# Production stage
+FROM node:22-slim AS runner
 WORKDIR /app
-CMD ["npm", "run", "start"]
+
+# Copy built assets from builder
+COPY --from=builder /app/.output ./
+
+EXPOSE 3000
+CMD ["node", "server/index.mjs"]

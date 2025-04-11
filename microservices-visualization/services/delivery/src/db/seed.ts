@@ -3,7 +3,6 @@ import { deliveries, deliveryItems } from './schema';
 
 const sampleDeliveries = [
   {
-    orderId: 1,
     customerId: '1',
     items: [
       {
@@ -19,7 +18,6 @@ const sampleDeliveries = [
     ],
   },
   {
-    orderId: 2,
     customerId: '2',
     items: [
       {
@@ -41,11 +39,13 @@ export async function seedDatabase() {
 
     // Insert new deliveries
     for (const delivery of sampleDeliveries) {
+      // Create delivery without orderId first
       const [newDelivery] = await db
         .insert(deliveries)
         .values({
-          orderId: delivery.orderId,
+          orderId: 0, // Temporary orderId, should be updated by the order service
           customerId: delivery.customerId,
+          status: 'pending',
         })
         .returning();
 

@@ -1,1 +1,3 @@
 .env
+.sentry_token
+.sentryclirc

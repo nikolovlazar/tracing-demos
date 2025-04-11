@@ -1,6 +1,10 @@
+node_modules
 .DS_Store
-/node_modules/
+dist
+dist-ssr
+*.local
+.output
+.vinxi
 
-# React Router
-/.react-router/
-/build/
+# Sentry Config File
+.env.sentry-build-plugin

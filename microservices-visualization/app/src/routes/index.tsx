@@ -1,47 +1,7 @@
-import { type MetaFunction, useFetcher } from 'react-router';
-import type { Route } from './+types/home';
-
-export const meta: MetaFunction = () => {
-  return [
-    { title: 'Food Delivery App' },
-    { name: 'description', content: 'Order your favorite food' },
-  ];
-};
-
-export async function action({ request }: Route.ActionArgs) {
-  const formData = await request.formData();
-  const items = formData.get('items');
-  const customerId = formData.get('customerId');
-  const deliveryAddress = formData.get('deliveryAddress');
-
-  try {
-    const apiUrl = `${process.env.API_URL}/orders`;
-
-    console.log('API URL:', apiUrl);
-
-    const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        customerId,
-        deliveryAddress,
-        items: JSON.parse(items as string),
-      }),
-    });
-
-    if (!response.ok) {
-      console.error('Failed to place order:', response.statusText);
-      throw new Error('Failed to place order');
-    }
-
-    return { status: 'success' };
-  } catch (error) {
-    console.error('Error placing order:', error);
-    return { status: 'error' };
-  }
-}
+import { createFileRoute } from '@tanstack/react-router';
+import { createServerFn } from '@tanstack/react-start';
+import { useMutation } from '@tanstack/react-query';
+import { useState } from 'react';
 
 interface CartItem {
   id: string;
@@ -50,31 +10,90 @@ interface CartItem {
   quantity: number;
 }
 
-export default function Home() {
-  const fetcher = useFetcher();
-  const isSubmitting = fetcher.state === 'submitting';
+interface OrderItem {
+  itemId: string;
+  name: string;
+  price: number;
+  quantity: number;
+}
 
-  // Mock cart data
-  const cartItems: CartItem[] = [
-    {
-      id: '1',
-      name: 'Margherita Pizza',
-      price: 12.99,
-      quantity: 1,
+interface OrderData {
+  customerId: string;
+  deliveryAddress: string;
+  items: OrderItem[];
+}
+
+// Mock cart data
+const cartItems: CartItem[] = [
+  {
+    id: '1',
+    name: 'Margherita Pizza',
+    price: 12.99,
+    quantity: 1,
+  },
+  {
+    id: '2',
+    name: 'Caesar Salad',
+    price: 8.99,
+    quantity: 2,
+  },
+  {
+    id: '3',
+    name: 'Garlic Bread',
+    price: 4.99,
+    quantity: 1,
+  },
+];
+
+const placeOrderFn = createServerFn({
+  method: 'POST',
+})
+  .validator((data: OrderData): OrderData => {
+    if (!data.customerId || !data.deliveryAddress || !data.items?.length) {
+      throw new Error('Missing required fields');
+    }
+
+    return {
+      customerId: data.customerId,
+      deliveryAddress: data.deliveryAddress,
+      items: data.items.map((item) => ({
+        itemId: item.itemId,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+    };
+  })
+  .handler(async ({ data }) => {
+    const response = await fetch(`${process.env.API_URL}/orders`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to place order');
+    }
+
+    return await response.json();
+  });
+
+function HomePage() {
+  const [orderStatus, setOrderStatus] = useState<'idle' | 'success' | 'error'>(
+    'idle'
+  );
+
+  const placeOrder = useMutation({
+    mutationFn: placeOrderFn,
+    onSuccess: () => {
+      setOrderStatus('success');
     },
-    {
-      id: '2',
-      name: 'Caesar Salad',
-      price: 8.99,
-      quantity: 2,
+    onError: () => {
+      setOrderStatus('error');
     },
-    {
-      id: '3',
-      name: 'Garlic Bread',
-      price: 4.99,
-      quantity: 1,
-    },
-  ];
+  });
 
   const subtotal = cartItems.reduce(
     (total, item) => total + item.price * item.quantity,
@@ -82,6 +101,25 @@ export default function Home() {
   );
   const tax = subtotal * 0.1; // 10% tax
   const total = subtotal + tax;
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    placeOrder.mutate({
+      data: {
+        customerId: formData.get('customerId') as string,
+        deliveryAddress: formData.get('deliveryAddress') as string,
+        items: cartItems.map((item) => ({
+          itemId: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+        })),
+      },
+    });
+  };
 
   return (
     <div className='max-w-2xl mx-auto'>
@@ -126,7 +164,7 @@ export default function Home() {
           </div>
         </div>
 
-        <fetcher.Form method='post' className='mt-6 space-y-4'>
+        <form onSubmit={handleSubmit} className='mt-6 space-y-4'>
           <div>
             <label
               htmlFor='deliveryAddress'
@@ -145,40 +183,32 @@ export default function Home() {
           </div>
 
           <input type='hidden' name='customerId' value='1' />
-          <input
-            type='hidden'
-            name='items'
-            value={JSON.stringify(
-              cartItems.map((item) => ({
-                itemId: item.id,
-                name: item.name,
-                quantity: item.quantity,
-                price: item.price,
-              }))
-            )}
-          />
 
           <button
             type='submit'
-            disabled={isSubmitting}
+            disabled={placeOrder.isPending}
             className='w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed'
           >
-            {isSubmitting ? 'Placing Order...' : 'Place Order'}
+            {placeOrder.isPending ? 'Placing Order...' : 'Place Order'}
           </button>
 
-          {fetcher.data?.status === 'success' && (
+          {orderStatus === 'success' && (
             <p className='mt-4 text-green-600 dark:text-green-400 text-center'>
               Order placed successfully!
             </p>
           )}
 
-          {fetcher.data?.status === 'error' && (
+          {orderStatus === 'error' && (
             <p className='mt-4 text-red-600 dark:text-red-400 text-center'>
               Failed to place order. Please try again.
             </p>
           )}
-        </fetcher.Form>
+        </form>
       </div>
     </div>
   );
 }
+
+export const Route = createFileRoute('/')({
+  component: HomePage,
+});

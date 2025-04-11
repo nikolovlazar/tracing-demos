@@ -106,12 +106,22 @@ export class PostgresOrderRepository implements IOrderRepository {
 
   async update(id: number, orderData: Partial<Order>): Promise<Order | null> {
     console.info('Updating order', { id, updates: orderData });
+
+    // Convert string dates to Date objects
+    const processedData = {
+      ...orderData,
+      actualDeliveryTime: orderData.actualDeliveryTime
+        ? new Date(orderData.actualDeliveryTime)
+        : undefined,
+      estimatedDeliveryTime: orderData.estimatedDeliveryTime
+        ? new Date(orderData.estimatedDeliveryTime)
+        : undefined,
+      updatedAt: new Date(),
+    };
+
     const [updatedOrder] = await db
       .update(orders)
-      .set({
-        ...orderData,
-        updatedAt: new Date(),
-      })
+      .set(processedData)
       .where(eq(orders.id, id))
       .returning();
 

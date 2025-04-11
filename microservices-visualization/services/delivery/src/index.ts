@@ -1,4 +1,5 @@
-import { serve } from 'bun';
+import './instrument';
+
 import { PostgresDeliveryRepository } from './repositories/postgres-delivery.repository';
 import { registerWithConsul } from './config/consul';
 import { initializeRabbitMQ, subscribeToOrderEvents } from './config/rabbitmq';
@@ -23,29 +24,22 @@ async function startService() {
     }
   });
 
-  const server = serve({
+  const server = Bun.serve({
     port: Number(process.env.PORT) || 8083,
-    routes: {
-      '/deliveries': {
-        GET: async () => {
-          const deliveries = await deliveryRepository.findAll();
-          return Response.json(deliveries);
-        },
-      },
-      '/deliveries/:id': {
-        GET: async (req, params) => {
-          const url = new URL(req.url);
-          const pathParts = url.pathname.split('/');
-          const id = Number(pathParts[2]);
+    async fetch(req) {
+      const url = new URL(req.url);
+      const pathParts = url.pathname.split('/');
 
-          const delivery = await deliveryRepository.findById(id);
-          if (!delivery) {
-            return new Response('Delivery not found', { status: 404 });
-          }
-          return Response.json(delivery);
-        },
-      },
-      '/health': new Response('OK', { status: 200 }),
+      if (url.pathname === '/deliveries' && req.method === 'GET') {
+        const deliveries = await deliveryRepository.findAll();
+        return Response.json(deliveries);
+      }
+
+      if (url.pathname === '/health') {
+        return new Response('OK', { status: 200 });
+      }
+
+      return new Response('Not found', { status: 404 });
     },
   });
 

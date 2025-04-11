@@ -1,3 +1,5 @@
+import './instrument';
+
 import { PostgresOrderRepository } from './repositories/postgres-order.repository';
 import { registerWithConsul } from './config/consul';
 import { OrderEventService } from './services/order-event.service';
@@ -14,6 +16,7 @@ import { runMigrations } from './db/migrate';
 const startService = async () => {
   try {
     await runMigrations();
+    await registerWithConsul();
     await initializeRabbitMQ();
 
     const orderRepository = new PostgresOrderRepository();
@@ -50,18 +53,15 @@ const startService = async () => {
       }
     });
 
-    // Register with Consul
-    await registerWithConsul();
-
     // Start the server
     const server = Bun.serve({
       port: Number(process.env.PORT) || 8080,
-      fetch(req) {
+      async fetch(req) {
         const url = new URL(req.url);
         console.log(`Request received: ${req.method} ${url.pathname}`);
 
         if (url.pathname === '/orders' && req.method === 'POST') {
-          return orderController.createOrder(req);
+          return await orderController.createOrder(req);
         }
         if (url.pathname === '/orders' && req.method === 'GET') {
           return new Response('Order service is running');
@@ -80,7 +80,4 @@ const startService = async () => {
   }
 };
 
-startService().catch((error) => {
-  console.error('Failed to start service:', error);
-  process.exit(1);
-});
+startService();

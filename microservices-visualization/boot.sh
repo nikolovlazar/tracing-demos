@@ -17,8 +17,9 @@ echo "✅ Consul is healthy."
 CONSUL_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' consul)
 echo "🔌 Found Consul IP: $CONSUL_IP"
 
-# Inject IP into .env for docker-compose interpolation
-echo "CONSUL_IP=$CONSUL_IP" > .env
+# Remove existing CONSUL_IP and any empty lines if present, then append new value
+sed -i '' '/^CONSUL_IP=/d;/^$/d' .env
+echo -e "\nCONSUL_IP=$CONSUL_IP" >> .env
 
 # Phase 2: Start Kong and other services
 echo "🚀 Starting Kong and remaining services..."

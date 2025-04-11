@@ -5,21 +5,29 @@ services:
       context: ./app
       dockerfile: Dockerfile
       args:
+        - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
         - API_URL=http://kong:8000
+        - SENTRY_DSN=${APP_SENTRY_DSN}
+        - VITE_SENTRY_DSN=${APP_SENTRY_DSN}
     ports:
-      - '3000:3000'
+      - '4000:3000'
     depends_on:
       kong:
         condition: service_healthy
     environment:
       - API_URL=http://kong:8000
+      - SENTRY_DSN=${APP_SENTRY_DSN}
+      - VITE_SENTRY_DSN=${APP_SENTRY_DSN}
     networks:
       - frontend-network
 
-  order-service:
+  order:
     build:
       context: ./services/order
       dockerfile: Dockerfile
+      args:
+        - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+        - PORT=8080
     depends_on:
       postgres:
         condition: service_healthy
@@ -28,7 +36,7 @@ services:
       consul:
         condition: service_healthy
     environment:
-      - PORT=8080
+      - SENTRY_DSN=${ORDER_SERVICE_SENTRY_DSN}
       - DB_URL=postgres://app_user:app_password@postgres:5432/orders
       - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
       - RABBITMQ_EXCHANGE=order_events
@@ -41,17 +49,17 @@ services:
       - CONSUL_SERVICE_CHECK_TIMEOUT=5s
     networks:
       - backend-network
-    volumes:
-      - ./services/order:/app
     working_dir: /app
-    command: ['bun', 'run', 'dev']
     deploy:
       replicas: 5
 
-  inventory-service:
+  inventory:
     build:
       context: ./services/inventory
       dockerfile: Dockerfile
+      args:
+        - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+        - PORT=8081
     depends_on:
       postgres:
         condition: service_healthy
@@ -60,7 +68,7 @@ services:
       consul:
         condition: service_healthy
     environment:
-      - PORT=8081
+      - SENTRY_DSN=${INVENTORY_SERVICE_SENTRY_DSN}
       - DB_URL=postgres://app_user:app_password@postgres:5432/inventory
       - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
       - RABBITMQ_EXCHANGE=order_events
@@ -73,17 +81,17 @@ services:
       - CONSUL_SERVICE_CHECK_TIMEOUT=5s
     networks:
       - backend-network
-    volumes:
-      - ./services/inventory:/app
     working_dir: /app
-    command: ['bun', 'run', 'dev']
     deploy:
       replicas: 3
 
-  kitchen-service:
+  kitchen:
     build:
       context: ./services/kitchen
       dockerfile: Dockerfile
+      args:
+        - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+        - PORT=8082
     depends_on:
       postgres:
         condition: service_healthy
@@ -92,7 +100,7 @@ services:
       consul:
         condition: service_healthy
     environment:
-      - PORT=8082
+      - SENTRY_DSN=${KITCHEN_SERVICE_SENTRY_DSN}
       - DB_URL=postgres://app_user:app_password@postgres:5432/kitchen
       - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
       - RABBITMQ_EXCHANGE=order_events
@@ -105,17 +113,17 @@ services:
       - CONSUL_SERVICE_CHECK_TIMEOUT=5s
     networks:
       - backend-network
-    volumes:
-      - ./services/kitchen:/app
     working_dir: /app
-    command: ['bun', 'run', 'dev']
     deploy:
       replicas: 7
 
-  delivery-service:
+  delivery:
     build:
       context: ./services/delivery
       dockerfile: Dockerfile
+      args:
+        - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
+        - PORT=8083
     depends_on:
       postgres:
         condition: service_healthy
@@ -124,7 +132,7 @@ services:
       consul:
         condition: service_healthy
     environment:
-      - PORT=8083
+      - SENTRY_DSN=${DELIVERY_SERVICE_SENTRY_DSN}
       - DB_URL=postgres://app_user:app_password@postgres:5432/deliveries
       - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
       - RABBITMQ_EXCHANGE=order_events
@@ -137,10 +145,7 @@ services:
       - CONSUL_SERVICE_CHECK_TIMEOUT=5s
     networks:
       - backend-network
-    volumes:
-      - ./services/delivery:/app
     working_dir: /app
-    command: ['bun', 'run', 'dev']
     deploy:
       replicas: 5
 

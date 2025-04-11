@@ -1,4 +1,4 @@
-import { PostgresInventoryRepository } from '../repositories/postgres-inventory.repository';
+import type { PostgresInventoryRepository } from '../repositories/postgres-inventory.repository';
 import { publishEvent } from '../config/rabbitmq';
 
 export class OrderEventService {

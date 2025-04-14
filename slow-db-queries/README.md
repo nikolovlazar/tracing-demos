@@ -19,6 +19,6 @@ You'd need Docker, PHP, Composer, and Node.js installed. To run the app:
 
 ## Causing a slow DB query
 
-1. Once you boot up the app and register, go to the Track page, create a few habits and click on the "Go Crazy! Generate Test Data" button 2-3 times.
+1. Once you boot up the app and register, go to the Track page, create a few habits and click on the "Go Crazy! Generate Test Data" button 4-5 times.
 2. Visit the Reports page and observe the console for a log of how long the database query took.
 3. Click on the generate button to make the query slower to hit your Sentry alert.

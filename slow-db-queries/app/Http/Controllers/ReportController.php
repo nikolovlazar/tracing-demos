@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Habit;
-use App\Models\HabitCompletion;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use App\Models\HabitCompletion;
 use Inertia\Inertia;
-use Carbon\Carbon;
 
 class ReportController extends Controller
 {
@@ -24,10 +21,6 @@ class ReportController extends Controller
             'last_month' => now()->subMonth()->startOfDay(),
             'last_year' => now()->subYear()->startOfDay(),
         ];
-
-        // Start measuring query time
-        $startTime = microtime(true);
-        DB::enableQueryLog();
 
         // Intentionally slow query using multiple anti-patterns
         $completions = HabitCompletion::query()
@@ -74,13 +67,6 @@ class ReportController extends Controller
                     ) as avg_day_of_year');
             }])
             ->get();
-
-        // Calculate query time
-        $queryTime = (microtime(true) - $startTime) * 1000; // Convert to milliseconds
-        DB::disableQueryLog();
-
-        // Log only execution time
-        Log::info(sprintf('Query execution time: %.2fms', $queryTime));
 
         // Format completions for response
         $completions = $completions

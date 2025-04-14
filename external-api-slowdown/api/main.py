@@ -98,7 +98,7 @@ async def get_stock_detail(stock_id: str):
             else:
                 # If the external service fails, return just the basic data
                 return {**stock, "sentiment_score": 0.0, "analyst_rating": "N/A"}
-        except httpx.RequestError as e:
+        except httpx.RequestError:
             # If the external service is unreachable, return just the basic data
             return {**stock, "sentiment_score": 0.0, "analyst_rating": "N/A"}
 

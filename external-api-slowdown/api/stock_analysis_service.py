@@ -9,27 +9,27 @@ STOCK_ANALYSIS = {
     "TECH": {
         "sentiment_score": 0.85,
         "analyst_rating": "Strong Buy",
-        "delay": 2.5  # seconds
+        "delay": 7.8  # seconds
     },
     "CLOUD": {
         "sentiment_score": 0.72,
         "analyst_rating": "Buy",
-        "delay": 1.8
+        "delay": 1.5
     },
     "AI": {
         "sentiment_score": 0.95,
         "analyst_rating": "Strong Buy",
-        "delay": 1.2
+        "delay": 0.1  # Very fast response
     },
     "DATA": {
         "sentiment_score": 0.68,
         "analyst_rating": "Hold",
-        "delay": 2.0
+        "delay": 7.2
     },
     "VR": {
         "sentiment_score": 0.78,
         "analyst_rating": "Buy",
-        "delay": 1.5
+        "delay": 0.8
     }
 }
 

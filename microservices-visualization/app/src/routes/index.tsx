@@ -4,14 +4,14 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
 interface CartItem {
-  id: string;
+  id: number;
   name: string;
   price: number;
   quantity: number;
 }
 
 interface OrderItem {
-  itemId: string;
+  id: number;
   name: string;
   price: number;
   quantity: number;
@@ -26,19 +26,19 @@ interface OrderData {
 // Mock cart data
 const cartItems: CartItem[] = [
   {
-    id: '1',
+    id: 1,
     name: 'Margherita Pizza',
     price: 12.99,
     quantity: 1,
   },
   {
-    id: '2',
+    id: 2,
     name: 'Caesar Salad',
     price: 8.99,
     quantity: 2,
   },
   {
-    id: '3',
+    id: 3,
     name: 'Garlic Bread',
     price: 4.99,
     quantity: 1,
@@ -57,7 +57,7 @@ const placeOrderFn = createServerFn({
       customerId: data.customerId,
       deliveryAddress: data.deliveryAddress,
       items: data.items.map((item) => ({
-        itemId: item.itemId,
+        id: item.id,
         name: item.name,
         quantity: item.quantity,
         price: item.price,
@@ -74,7 +74,8 @@ const placeOrderFn = createServerFn({
     });
 
     if (!response.ok) {
-      throw new Error('Failed to place order');
+      const errorData = await response.json();
+      throw new Error(`Failed to place order: ${errorData.message}`);
     }
 
     return await response.json();
@@ -112,7 +113,7 @@ function HomePage() {
         customerId: formData.get('customerId') as string,
         deliveryAddress: formData.get('deliveryAddress') as string,
         items: cartItems.map((item) => ({
-          itemId: item.id,
+          id: item.id,
           name: item.name,
           quantity: item.quantity,
           price: item.price,

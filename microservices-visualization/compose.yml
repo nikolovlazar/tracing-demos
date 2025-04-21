@@ -28,6 +28,8 @@ services:
       args:
         - SENTRY_AUTH_TOKEN=${SENTRY_AUTH_TOKEN}
         - PORT=8080
+    ports:
+      - '8080:8080'
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,21 +39,22 @@ services:
         condition: service_healthy
     environment:
       - SENTRY_DSN=${ORDER_SERVICE_SENTRY_DSN}
-      - DB_URL=postgres://app_user:app_password@postgres:5432/orders
+      - DB_URL=postgres://app_user:app_password@postgres:5432/orders?sslmode=disable
+      - MIGRATIONS_PATH=/app/migrations
       - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
-      - RABBITMQ_EXCHANGE=order_events
-      - RABBITMQ_QUEUE=order_service_events
       - CONSUL_HTTP_ADDR=http://consul:8500
-      - CONSUL_SERVICE_NAME=order-service
+      - CONSUL_SERVICE_NAME=order
       - CONSUL_SERVICE_PORT=8080
-      - CONSUL_SERVICE_CHECK_HTTP=/health
+      - CONSUL_SERVICE_CHECK_HTTP=health
       - CONSUL_SERVICE_CHECK_INTERVAL=10s
       - CONSUL_SERVICE_CHECK_TIMEOUT=5s
     networks:
       - backend-network
+    volumes:
+      - ./services/order/migrations:/app/migrations
     working_dir: /app
-    deploy:
-      replicas: 5
+    # deploy:
+    #   replicas: 5
 
   inventory:
     build:
@@ -69,21 +72,24 @@ services:
         condition: service_healthy
     environment:
       - SENTRY_DSN=${INVENTORY_SERVICE_SENTRY_DSN}
-      - DB_URL=postgres://app_user:app_password@postgres:5432/inventory
+      - DB_URL=postgres://app_user:app_password@postgres:5432/inventory?sslmode=disable
+      - MIGRATIONS_PATH=/app/migrations
       - RABBITMQ_URL=amqp://admin:admin@rabbitmq:5672
       - RABBITMQ_EXCHANGE=order_events
       - RABBITMQ_QUEUE=inventory_service_events
       - CONSUL_HTTP_ADDR=http://consul:8500
-      - CONSUL_SERVICE_NAME=inventory-service
+      - CONSUL_SERVICE_NAME=inventory
       - CONSUL_SERVICE_PORT=8081
-      - CONSUL_SERVICE_CHECK_HTTP=/health
+      - CONSUL_SERVICE_CHECK_HTTP=health
       - CONSUL_SERVICE_CHECK_INTERVAL=10s
       - CONSUL_SERVICE_CHECK_TIMEOUT=5s
     networks:
       - backend-network
+    volumes:
+      - ./services/inventory/migrations:/app/migrations
     working_dir: /app
-    deploy:
-      replicas: 3
+    # deploy:
+    #   replicas: 3
 
   kitchen:
     build:
@@ -106,16 +112,16 @@ services:
       - RABBITMQ_EXCHANGE=order_events
       - RABBITMQ_QUEUE=kitchen_service_events
       - CONSUL_HTTP_ADDR=http://consul:8500
-      - CONSUL_SERVICE_NAME=kitchen-service
+      - CONSUL_SERVICE_NAME=kitchen
       - CONSUL_SERVICE_PORT=8082
-      - CONSUL_SERVICE_CHECK_HTTP=/health
+      - CONSUL_SERVICE_CHECK_HTTP=health
       - CONSUL_SERVICE_CHECK_INTERVAL=10s
       - CONSUL_SERVICE_CHECK_TIMEOUT=5s
     networks:
       - backend-network
     working_dir: /app
-    deploy:
-      replicas: 7
+    # deploy:
+    #   replicas: 7
 
   delivery:
     build:
@@ -138,16 +144,16 @@ services:
       - RABBITMQ_EXCHANGE=order_events
       - RABBITMQ_QUEUE=delivery_service_events
       - CONSUL_HTTP_ADDR=http://consul:8500
-      - CONSUL_SERVICE_NAME=delivery-service
+      - CONSUL_SERVICE_NAME=delivery
       - CONSUL_SERVICE_PORT=8083
-      - CONSUL_SERVICE_CHECK_HTTP=/health
+      - CONSUL_SERVICE_CHECK_HTTP=health
       - CONSUL_SERVICE_CHECK_INTERVAL=10s
       - CONSUL_SERVICE_CHECK_TIMEOUT=5s
     networks:
       - backend-network
     working_dir: /app
-    deploy:
-      replicas: 5
+  # deploy:
+  #   replicas: 5
 
   postgres:
     container_name: postgres
@@ -155,8 +161,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=ordersdb
-      - POSTGRES_MULTIPLE_DATABASES=orders,inventory,kitchen,deliveries,kong
+      - POSTGRES_MULTIPLE_DATABASES=orders,inventory,kitchen,deliveries
       - POSTGRES_USER_APP=app_user
       - POSTGRES_PASSWORD_APP=app_password
       - POSTGRES_USER_KONG=kong

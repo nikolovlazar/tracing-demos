@@ -21,7 +21,7 @@ upstreams:
           timeouts: 3
           http_failures: 2
     targets:
-      - target: order-service.service.consul:8080
+      - target: order.service.consul:8080
         weight: 100
 
   - name: kitchen-service-upstream
@@ -43,7 +43,7 @@ upstreams:
           timeouts: 3
           http_failures: 2
     targets:
-      - target: kitchen-service.service.consul:8082
+      - target: kitchen.service.consul:8082
         weight: 100
 
   - name: inventory-service-upstream
@@ -65,7 +65,7 @@ upstreams:
           timeouts: 3
           http_failures: 2
     targets:
-      - target: inventory-service.service.consul:8081
+      - target: inventory.service.consul:8081
         weight: 100
 
   - name: delivery-service-upstream
@@ -87,7 +87,7 @@ upstreams:
           timeouts: 3
           http_failures: 2
     targets:
-      - target: delivery-service.service.consul:8083
+      - target: delivery.service.consul:8083
         weight: 100
 
 services:

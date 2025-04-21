@@ -1,0 +1,37 @@
+syntax = "proto3";
+
+package events;
+
+option go_package = "kitchen/internal/events";
+
+import "google/protobuf/timestamp.proto";
+
+// Common metadata for all events
+message EventMetadata {
+  string trace_id = 1;
+  string span_id = 2;
+  map<string, string> baggage = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
+
+message OrderItem {
+  int32 id = 1;
+  int32 quantity = 2;
+}
+
+message ReadyForKitchenEvent {
+  EventMetadata metadata = 1;
+  int32 order_id = 2;
+  repeated OrderItem items = 3;
+}
+
+message KitchenAcceptedOrderEvent {
+  EventMetadata metadata = 1;
+  int32 order_id = 2;
+}
+
+message OrderCookedEvent {
+  EventMetadata metadata = 1;
+  int32 order_id = 2;
+  repeated OrderItem items = 3;
+}

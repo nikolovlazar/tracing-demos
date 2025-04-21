@@ -1,1 +1,0 @@
-ALTER TABLE "order_items" ALTER COLUMN "price" SET DATA TYPE numeric(10, 2);

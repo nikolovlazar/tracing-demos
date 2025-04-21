@@ -1,3 +1,4 @@
 .env
 .sentry_token
 .sentryclirc
+**/__debug_bin*

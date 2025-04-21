@@ -1,1 +1,0 @@
-ALTER TABLE "kitchen_orders" DROP COLUMN "delivery_address";

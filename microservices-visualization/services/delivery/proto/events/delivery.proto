@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+package events;
+
+option go_package = "delivery/internal/events";
+
+import "google/protobuf/timestamp.proto";
+
+message EventMetadata {
+  string trace_id = 1;
+  string span_id = 2;
+  map<string, string> baggage = 3;
+}
+
+message OrderItem {
+  int32 id = 1;
+  int32 quantity = 2;
+}
+
+message OrderReadyForDeliveryEvent {
+  EventMetadata metadata = 1;
+  int32 order_id = 2;
+  repeated OrderItem items = 3;
+  string delivery_address = 4;
+  string customer_id = 5;
+}
+
+message DeliveryStartedEvent {
+  EventMetadata metadata = 1;
+  int32 order_id = 2;
+}
+
+message DeliveryCompletedEvent {
+  EventMetadata metadata = 1;
+  int32 order_id = 2;
+}

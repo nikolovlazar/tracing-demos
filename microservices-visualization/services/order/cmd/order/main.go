@@ -10,9 +10,31 @@ import (
 	"order/internal/repository"
 	"os"
 	"time"
+
+	"github.com/getsentry/sentry-go"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 )
 
 func main() {
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn:              "https://fcb95d209acc4e623750364a39be9645@o4506044970565632.ingest.us.sentry.io/4509197456375808",
+		TracesSampleRate: 1.0,
+		AttachStacktrace: true,
+		EnableTracing:    true,
+		TracesSampler: sentry.TracesSampler(func(ctx sentry.SamplingContext) float64 {
+			if ctx.Span.Name == "GET /health" {
+				return 0.0
+			}
+			return 1.0
+		}),
+	}); err != nil {
+		log.Fatalf("Sentry initialization failed: %s", err)
+	}
+
+	sentryHandler := sentryhttp.New(sentryhttp.Options{
+		Repanic: true,
+	})
+
 	orderRepo, err := repository.NewOrderRepository()
 	if err != nil {
 		log.Fatal("❌ Failed to create order repository: ", err)
@@ -26,8 +48,8 @@ func main() {
 
 	handler := handlers.NewOrderHandler(orderRepo, rabbitmq)
 
-	http.HandleFunc("/health", handler.HandleHealthCheck)
-	http.HandleFunc("/orders", handler.HandleOrders)
+	http.HandleFunc("/health", sentryHandler.HandleFunc(handler.HandleHealthCheck))
+	http.HandleFunc("/orders", sentryHandler.HandleFunc(handler.HandleOrders))
 
 	go rabbitmq.ConsumeEvents(
 		context.Background(),

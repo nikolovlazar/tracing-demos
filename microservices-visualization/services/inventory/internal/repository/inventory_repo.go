@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -75,8 +76,15 @@ func (r *InventoryRepository) CheckAndReserveInventory(ctx context.Context, orde
 
 	for _, item := range items {
 		var product models.Product
-		err := tx.GetContext(ctx, &product, "SELECT * FROM products WHERE id = $1 FOR UPDATE", item.ProductID)
-
+		query := "SELECT * FROM products WHERE id = $1 FOR UPDATE"
+		selectSpan := sentry.StartSpan(ctx, "db.sql.execute", []sentry.SpanOption{
+			sentry.WithDescription(query),
+		}...)
+		selectSpan.SetData("db.system", "postgresql")
+		selectSpan.SetData("db.operation", "SELECT")
+		selectSpan.SetData("db.name", "products")
+		err := tx.GetContext(ctx, &product, query, item.ProductID)
+		selectSpan.Finish()
 		if err != nil {
 			return false, fmt.Sprintf("Product %d not found", item.ProductID), err
 		}
@@ -86,14 +94,30 @@ func (r *InventoryRepository) CheckAndReserveInventory(ctx context.Context, orde
 		}
 
 		// Update product quantity
-		_, err = tx.ExecContext(ctx, "UPDATE products SET quantity = quantity - $1, updated_at = $2 WHERE id = $3", item.Quantity, time.Now(), item.ProductID)
+		query = "UPDATE products SET quantity = quantity - $1, updated_at = $2 WHERE id = $3"
+		updateSpan := sentry.StartSpan(ctx, "db.sql.execute", []sentry.SpanOption{
+			sentry.WithDescription(query),
+		}...)
+		updateSpan.SetData("db.system", "postgresql")
+		updateSpan.SetData("db.operation", "UPDATE")
+		updateSpan.SetData("db.name", "products")
+		_, err = tx.ExecContext(ctx, query, item.Quantity, time.Now(), item.ProductID)
+		updateSpan.Finish()
 
 		if err != nil {
 			return false, "", err
 		}
 
 		// Create reservation
-		_, err = tx.ExecContext(ctx, "INSERT INTO inventory_reservations (order_id, product_id, quantity, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $5)", orderID, item.ProductID, item.Quantity, "reserved", time.Now())
+		query = "INSERT INTO inventory_reservations (order_id, product_id, quantity, status, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $5)"
+		insertSpan := sentry.StartSpan(ctx, "db.sql.execute", []sentry.SpanOption{
+			sentry.WithDescription(query),
+		}...)
+		insertSpan.SetData("db.system", "postgresql")
+		insertSpan.SetData("db.operation", "INSERT")
+		insertSpan.SetData("db.name", "inventory_reservations")
+		_, err = tx.ExecContext(ctx, query, orderID, item.ProductID, item.Quantity, "reserved", time.Now())
+		insertSpan.Finish()
 
 		if err != nil {
 			return false, "", err

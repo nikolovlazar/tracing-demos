@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"log"
 	"order/internal/models"
@@ -9,6 +10,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
@@ -64,10 +66,22 @@ func NewOrderRepository() (*OrderRepository, error) {
 	return &OrderRepository{db: conn}, nil
 }
 
-func (r *OrderRepository) GetOrder(orderID int32) (*models.Order, error) {
+func (r *OrderRepository) GetOrder(ctx context.Context, orderID int32) (*models.Order, error) {
+	parentSpan := sentry.SpanFromContext(ctx)
+
 	var order models.Order
 
-	err := r.db.Get(&order, "SELECT * FROM orders WHERE id = $1", orderID)
+	query := "SELECT * FROM orders WHERE id = $1"
+
+	selectOrderSpan := parentSpan.StartChild("db.sql.execute", []sentry.SpanOption{
+		sentry.WithDescription(query),
+	}...)
+	selectOrderSpan.SetData("db.system", "postgresql")
+	selectOrderSpan.SetData("db.operation", "SELECT")
+	selectOrderSpan.SetData("db.name", "orders")
+
+	err := r.db.Get(&order, query, orderID)
+	selectOrderSpan.Finish()
 	if err != nil {
 		return nil, err
 	}
@@ -75,8 +89,21 @@ func (r *OrderRepository) GetOrder(orderID int32) (*models.Order, error) {
 	return &order, nil
 }
 
-func (r *OrderRepository) UpdateOrderStatus(orderID int32, status string) error {
-	_, err := r.db.Exec("UPDATE orders SET status = $1 WHERE id = $2", status, orderID)
+func (r *OrderRepository) UpdateOrderStatus(ctx context.Context, orderID int32, status string) error {
+	parentSpan := sentry.SpanFromContext(ctx)
+
+	query := "UPDATE orders SET status = $1 WHERE id = $2"
+
+	insertOrderSpan := parentSpan.StartChild("db.sql.execute", []sentry.SpanOption{
+		sentry.WithDescription(query),
+	}...)
+	insertOrderSpan.SetData("db.system", "postgresql")
+	insertOrderSpan.SetData("db.operation", "UPDATE")
+	insertOrderSpan.SetData("db.name", "orders")
+
+	_, err := r.db.Exec(query, status, orderID)
+	insertOrderSpan.Finish()
+
 	if err != nil {
 		return err
 	}
@@ -84,7 +111,9 @@ func (r *OrderRepository) UpdateOrderStatus(orderID int32, status string) error 
 	return nil
 }
 
-func (r *OrderRepository) CreateOrder(req *models.CreateOrderRequest) (*models.Order, error) {
+func (r *OrderRepository) CreateOrder(ctx context.Context, req *models.CreateOrderRequest) (*models.Order, error) {
+	parentSpan := sentry.SpanFromContext(ctx)
+
 	tx, err := r.db.Beginx()
 	if err != nil {
 		return nil, err
@@ -104,23 +133,34 @@ func (r *OrderRepository) CreateOrder(req *models.CreateOrderRequest) (*models.O
 		RETURNING id
 	`
 
+	insertOrderSpan := parentSpan.StartChild("db.sql.execute", []sentry.SpanOption{
+		sentry.WithDescription(query),
+	}...)
+	insertOrderSpan.SetData("db.system", "postgresql")
+	insertOrderSpan.SetData("db.operation", "INSERT")
+	insertOrderSpan.SetData("db.name", "orders")
 	rows, err := tx.NamedQuery(query, order)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
+	insertOrderSpan.Finish()
 	if !rows.Next() {
-		return nil, errors.New("no order created")
+		err = errors.New("no order created")
+		sentry.CaptureException(err)
+		return nil, err
 	}
 
 	err = rows.Scan(&order.Id)
 	if err != nil {
+		sentry.CaptureException(err)
 		return nil, err
 	}
 
 	err = tx.Commit()
 	if err != nil {
+		sentry.CaptureException(err)
 		return nil, err
 	}
 

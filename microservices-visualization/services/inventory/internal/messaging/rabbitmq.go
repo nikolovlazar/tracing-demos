@@ -6,11 +6,10 @@ import (
 	"inventory/internal/events"
 	"log"
 	"os"
-	"time"
 
+	"github.com/getsentry/sentry-go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type RabbitMQClient struct {
@@ -92,7 +91,7 @@ func NewRabbitMQClient() (*RabbitMQClient, error) {
 
 func (c *RabbitMQClient) ConsumeEvents(
 	ctx context.Context,
-	handleInventoryCheck func(orderID int32, items []*events.OrderItem) (bool, string, error),
+	handleInventoryCheck func(ctx context.Context, orderID int32, items []*events.OrderItem) (bool, string, error),
 ) error {
 	msgs, err := c.channel.Consume(
 		"inventory_service_events",
@@ -110,65 +109,102 @@ func (c *RabbitMQClient) ConsumeEvents(
 
 	go func() {
 		for msg := range msgs {
+			sentryTrace := msg.Headers["sentry-trace"].(string)
+			baggage := msg.Headers["baggage"].(string)
+			continueOptions := sentry.ContinueFromHeaders(sentryTrace, baggage)
+
+			processTx := sentry.StartTransaction(ctx, "queue.process", continueOptions)
+			processTx.SetData("service", "inventory")
+			processTx.SetData("messaging.message.id", msg.MessageId)
+			processTx.SetData("messaging.destination.name", msg.Exchange)
+			processTx.SetData("messaging.system", "rabbitmq")
+			processTx.SetData("messaging.destination.routing_key", msg.RoutingKey)
+			processTx.SetData("messaging.message.body.size", len(msg.Body))
+
 			switch msg.RoutingKey {
 			case "order.created":
+				unmarshalSpan := processTx.StartChild("deserialize", []sentry.SpanOption{
+					sentry.WithDescription("proto.Unmarshal"),
+				}...)
+				unmarshalSpan.SetData("event.name", "OrderCreatedEvent")
 				var event events.OrderCreatedEvent
 				err := proto.Unmarshal(msg.Body, &event)
+				unmarshalSpan.Finish()
 				if err != nil {
 					log.Printf("❌ AMQP: Failed to unmarshal order created event: %v", err)
 					msg.Nack(false, false)
+					processTx.Finish()
 					continue
 				}
 
 				log.Printf("📦 Processing order %d for inventory check", event.OrderId)
 
-				success, message, err := handleInventoryCheck(event.OrderId, event.Items)
+				handleInventoryCheckSpan := processTx.StartChild("function", []sentry.SpanOption{
+					sentry.WithDescription("handleInventoryCheck"),
+				}...)
+				success, message, err := handleInventoryCheck(handleInventoryCheckSpan.Context(), event.OrderId, event.Items)
+				handleInventoryCheckSpan.Finish()
 				if err != nil {
 					log.Printf("Error checking inventory: %v", err)
 					msg.Nack(false, true)
+					processTx.Finish()
 					continue
 				}
 
+				marshalSpan := processTx.StartChild("serialize", []sentry.SpanOption{
+					sentry.WithDescription("proto.Marshal"),
+				}...)
+				marshalSpan.SetData("event.name", "InventoryReservedEvent")
 				response := &events.InventoryReservedEvent{
-					Metadata: &events.EventMetadata{
-						TraceId:   event.Metadata.TraceId,
-						SpanId:    "",
-						Baggage:   event.Metadata.Baggage,
-						Timestamp: timestamppb.New(time.Now()),
-					},
 					OrderId:       event.OrderId,
 					Success:       success,
 					Message:       message,
 					ReservedItems: event.Items,
 				}
-
 				payload, err := proto.Marshal(response)
+				marshalSpan.Finish()
 				if err != nil {
 					log.Printf("❌ AMQP: Failed to marshal inventory reserved event: %v", err)
 					msg.Nack(false, false)
+					processTx.Finish()
 					continue
 				}
 
+				publishSpan := processTx.StartChild("queue.publish", []sentry.SpanOption{
+					sentry.WithDescription("inventory.reserved"),
+				}...)
+				publishSpan.SetData("messaging.destination.name", "order_events")
+				publishSpan.SetData("messaging.destination.routing_key", "inventory.reserved")
+				publishSpan.SetData("messaging.message.id", fmt.Sprintf("inventory.%d", event.OrderId))
+				publishSpan.SetData("messaging.message.body.size", len(payload))
+				publishSpan.SetData("messaging.system", "rabbitmq")
 				err = c.channel.Publish(
 					"order_events",
 					"inventory.reserved",
 					false, // mandatory
 					false, // immediate
 					amqp.Publishing{
-						ContentType:  "application/x-protobuf",
-						Body:         payload,
+						ContentType: "application/x-protobuf",
+						Body:        payload,
+						Headers: amqp.Table{
+							"sentry-trace": publishSpan.ToSentryTrace(),
+							"baggage":      publishSpan.ToBaggage(),
+						},
 						MessageId:    fmt.Sprintf("inventory.%d", event.OrderId),
 						DeliveryMode: amqp.Persistent,
 					})
+				publishSpan.Finish()
 
 				if err != nil {
 					log.Printf("Error publishing response: %v", err)
 					msg.Nack(false, true)
+					processTx.Finish()
 					continue
 				}
 
 				log.Printf("✅ Inventory check completed for order %d: %v", event.OrderId, success)
 				msg.Ack(false) // acknowledge the original message
+				processTx.Finish()
 			}
 		}
 	}()

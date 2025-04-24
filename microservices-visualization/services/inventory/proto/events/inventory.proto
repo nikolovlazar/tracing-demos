@@ -6,21 +6,12 @@ option go_package = "inventory/internal/events";
 
 import "google/protobuf/timestamp.proto";
 
-// Common metadata for all events
-message EventMetadata {
-  string trace_id = 1;
-  string span_id = 2;
-  map<string, string> baggage = 3;
-  google.protobuf.Timestamp timestamp = 4;
-}
-
 message OrderItem {
   int32 id = 1;
   int32 quantity = 2;
 }
 
 message OrderCreatedEvent {
-  EventMetadata metadata = 1;
   int32 order_id = 2;
   string customer_id = 3;
   string status = 4;
@@ -29,7 +20,6 @@ message OrderCreatedEvent {
 }
 
 message InventoryReservedEvent {
-  EventMetadata metadata = 1;
   int32 order_id = 2;
   bool success = 3;
   string message = 4;

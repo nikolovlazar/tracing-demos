@@ -22,9 +22,8 @@ func (h *InventoryHandler) HandleHealthCheck(w http.ResponseWriter, r *http.Requ
 	w.Write([]byte("OK"))
 }
 
-func (h *InventoryHandler) HandleInventoryCheck(orderId int32, items []*events.OrderItem) (bool, string, error) {
+func (h *InventoryHandler) HandleInventoryCheck(ctx context.Context, orderId int32, items []*events.OrderItem) (bool, string, error) {
 	log.Printf("📦 Processing inventory check for order %d", orderId)
-
 	reservations := make([]*models.InventoryReservation, len(items))
 	for i, item := range items {
 		reservations[i] = &models.InventoryReservation{
@@ -34,5 +33,5 @@ func (h *InventoryHandler) HandleInventoryCheck(orderId int32, items []*events.O
 		}
 	}
 
-	return h.repo.CheckAndReserveInventory(context.Background(), int(orderId), reservations)
+	return h.repo.CheckAndReserveInventory(ctx, int(orderId), reservations)
 }

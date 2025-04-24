@@ -9,9 +9,31 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/getsentry/sentry-go"
+	sentryhttp "github.com/getsentry/sentry-go/http"
 )
 
 func main() {
+	if err := sentry.Init(sentry.ClientOptions{
+		Dsn:              "https://7f46d381d6e1765289f6e99bdb8644e3@o4506044970565632.ingest.us.sentry.io/4509198161346560",
+		TracesSampleRate: 1.0,
+		AttachStacktrace: true,
+		EnableTracing:    true,
+		TracesSampler: sentry.TracesSampler(func(ctx sentry.SamplingContext) float64 {
+			if ctx.Span.Name == "GET /health" {
+				return 0.0
+			}
+			return 1.0
+		}),
+	}); err != nil {
+		log.Fatalf("Sentry initialization failed: %s", err)
+	}
+
+	sentryHandler := sentryhttp.New(sentryhttp.Options{
+		Repanic: true,
+	})
+
 	rabbitmq, err := messaging.NewRabbitMQClient()
 	if err != nil {
 		log.Fatal("❌ Failed to create RabbitMQ client: ", err)
@@ -20,7 +42,7 @@ func main() {
 
 	handler := handlers.NewKitchenHandler(rabbitmq)
 
-	http.HandleFunc("/health", handler.HandleHealthCheck)
+	http.HandleFunc("/health", sentryHandler.HandleFunc(handler.HandleHealthCheck))
 
 	go rabbitmq.ConsumeEvents(
 		context.Background(),

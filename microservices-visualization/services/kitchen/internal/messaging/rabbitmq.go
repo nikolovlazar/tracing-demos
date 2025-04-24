@@ -6,16 +6,15 @@ import (
 	"kitchen/internal/events"
 	"log"
 	"os"
-	"time"
 
+	"github.com/getsentry/sentry-go"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type RabbitMQClient struct {
 	conn    *amqp.Connection
-	Channel *amqp.Channel
+	channel *amqp.Channel
 }
 
 func NewRabbitMQClient() (*RabbitMQClient, error) {
@@ -82,20 +81,19 @@ func NewRabbitMQClient() (*RabbitMQClient, error) {
 
 	client := &RabbitMQClient{
 		conn:    conn,
-		Channel: ch,
+		channel: ch,
 	}
 
 	log.Println("✅ AMQP: RabbitMQ client initialized")
 
 	return client, nil
-
 }
 
 func (c *RabbitMQClient) ConsumeEvents(
 	ctx context.Context,
-	handleReadyForKitchen func(metadata *events.EventMetadata, orderID int32, items []*events.OrderItem) (bool, error),
+	handleReadyForKitchen func(ctx context.Context, orderID int32, items []*events.OrderItem) (bool, error),
 ) error {
-	msgs, err := c.Channel.Consume(
+	msgs, err := c.channel.Consume(
 		"kitchen_service_events",
 		"",    // consumer
 		false, // auto-ack
@@ -111,63 +109,102 @@ func (c *RabbitMQClient) ConsumeEvents(
 
 	go func() {
 		for msg := range msgs {
+			sentryTrace := msg.Headers["sentry-trace"].(string)
+			baggage := msg.Headers["baggage"].(string)
+			continueOptions := sentry.ContinueFromHeaders(sentryTrace, baggage)
+
+			processTx := sentry.StartTransaction(ctx, "queue.process", continueOptions)
+			processTx.SetData("service", "kitchen")
+			processTx.SetData("messaging.message.id", msg.MessageId)
+			processTx.SetData("messaging.destination.name", msg.Exchange)
+			processTx.SetData("messaging.system", "rabbitmq")
+			processTx.SetData("messaging.destination.routing_key", msg.RoutingKey)
+			processTx.SetData("messaging.message.body.size", len(msg.Body))
+
 			switch msg.RoutingKey {
 			case "order.ready_for_kitchen":
+				unmarshalSpan := processTx.StartChild("deserialize", []sentry.SpanOption{
+					sentry.WithDescription("proto.Unmarshal"),
+				}...)
+				unmarshalSpan.SetData("event.name", "ReadyForKitchenEvent")
 				var event events.ReadyForKitchenEvent
 				err := proto.Unmarshal(msg.Body, &event)
+				unmarshalSpan.Finish()
 				if err != nil {
 					log.Printf("❌ AMQP: Failed to unmarshal ready for kitchen event: %v", err)
 					msg.Nack(false, false)
+					processTx.Finish()
+					continue
+				}
+
+				log.Printf("📦 Accepting order %d", event.OrderId)
+
+				marshalSpan := processTx.StartChild("serialize", []sentry.SpanOption{
+					sentry.WithDescription("proto.Marshal"),
+				}...)
+				marshalSpan.SetData("event.name", "KitchenAcceptedOrderEvent")
+				response := &events.KitchenAcceptedOrderEvent{
+					OrderId: event.OrderId,
+				}
+				payload, err := proto.Marshal(response)
+				marshalSpan.Finish()
+				if err != nil {
+					log.Printf("❌ AMQP: Failed to marshal kitchen accepted order event: %v", err)
+					msg.Nack(false, false)
+					processTx.Finish()
+					continue
+				}
+
+				publishSpan := processTx.StartChild("queue.publish", []sentry.SpanOption{
+					sentry.WithDescription("kitchen.accepted"),
+				}...)
+				publishSpan.SetData("messaging.destination.name", "order_events")
+				publishSpan.SetData("messaging.destination.routing_key", "kitchen.accepted")
+				publishSpan.SetData("messaging.message.id", fmt.Sprintf("kitchen.%d", event.OrderId))
+				publishSpan.SetData("messaging.message.body.size", len(payload))
+				publishSpan.SetData("messaging.system", "rabbitmq")
+				err = c.channel.Publish(
+					"order_events",
+					"kitchen.accepted",
+					false, // mandatory
+					false, // immediate
+					amqp.Publishing{
+						ContentType: "application/x-protobuf",
+						Body:        payload,
+						Headers: amqp.Table{
+							"sentry-trace": publishSpan.ToSentryTrace(),
+							"baggage":      publishSpan.ToBaggage(),
+						},
+						MessageId:    fmt.Sprintf("kitchen.%d", event.OrderId),
+						DeliveryMode: amqp.Persistent,
+					},
+				)
+				publishSpan.Finish()
+
+				if err != nil {
+					log.Printf("❌ Error publishing kitchen accepted order event: %v", err)
+					msg.Nack(false, true)
+					processTx.Finish()
 					continue
 				}
 
 				log.Printf("📦 Processing ready for kitchen event for order %d", event.OrderId)
 
-				success, err := handleReadyForKitchen(event.Metadata, event.OrderId, event.Items)
+				handleReadyForKitchenSpan := processTx.StartChild("function", []sentry.SpanOption{
+					sentry.WithDescription("handleReadyForKitchen"),
+				}...)
+				success, err := handleReadyForKitchen(handleReadyForKitchenSpan.Context(), event.OrderId, event.Items)
+				handleReadyForKitchenSpan.Finish()
 				if err != nil || !success {
 					log.Printf("❌ Error handling ready for kitchen event: %v", err)
 					msg.Nack(false, true)
-					continue
-				}
-
-				response := &events.KitchenAcceptedOrderEvent{
-					Metadata: &events.EventMetadata{
-						TraceId:   event.Metadata.TraceId,
-						SpanId:    "",
-						Baggage:   event.Metadata.Baggage,
-						Timestamp: timestamppb.New(time.Now()),
-					},
-					OrderId: event.OrderId,
-				}
-
-				payload, err := proto.Marshal(response)
-				if err != nil {
-					log.Printf("❌ AMQP: Failed to marshal kitchen accepted order event: %v", err)
-					msg.Nack(false, true)
-					continue
-				}
-
-				err = c.Channel.Publish(
-					"order_events",
-					"kitchen.accepted",
-					false,
-					false,
-					amqp.Publishing{
-						ContentType:  "application/x-protobuf",
-						Body:         payload,
-						MessageId:    fmt.Sprintf("order.%d", event.OrderId),
-						DeliveryMode: amqp.Persistent,
-					},
-				)
-
-				if err != nil {
-					log.Printf("❌ AMQP: Failed to publish kitchen accepted order event: %v", err)
-					msg.Nack(false, true)
+					processTx.Finish()
 					continue
 				}
 
 				log.Printf("✅ Order ready for kitchen event handled for order %d", event.OrderId)
 				msg.Ack(false)
+				processTx.Finish()
 			}
 		}
 	}()
@@ -175,14 +212,22 @@ func (c *RabbitMQClient) ConsumeEvents(
 	return nil
 }
 
-func (c *RabbitMQClient) PublishOrderCooked(ctx context.Context, metadata *events.EventMetadata, orderID int32, items []*events.OrderItem) error {
+func (c *RabbitMQClient) PublishOrderCooked(ctx context.Context, orderID int32, items []*events.OrderItem) error {
+	// Get the cooking span from context - this should be our parent span
+	parentSpan := sentry.SpanFromContext(ctx)
+
+	// Create a publish span as a child of the cooking span
+	publishSpan := parentSpan.StartChild("queue.publish", []sentry.SpanOption{
+		sentry.WithDescription("kitchen.order_cooked"),
+	}...)
+	defer publishSpan.Finish()
+
+	publishSpan.SetData("messaging.destination.name", "order_events")
+	publishSpan.SetData("messaging.destination.routing_key", "kitchen.order_cooked")
+	publishSpan.SetData("messaging.message.id", fmt.Sprintf("kitchen.%d", orderID))
+	publishSpan.SetData("messaging.system", "rabbitmq")
+
 	payload, err := proto.Marshal(&events.OrderCookedEvent{
-		Metadata: &events.EventMetadata{
-			TraceId:   metadata.TraceId,
-			SpanId:    "",
-			Baggage:   metadata.Baggage,
-			Timestamp: timestamppb.New(time.Now()),
-		},
 		OrderId: orderID,
 		Items:   items,
 	})
@@ -191,15 +236,22 @@ func (c *RabbitMQClient) PublishOrderCooked(ctx context.Context, metadata *event
 		return fmt.Errorf("❌ AMQP: Failed to marshal order cooked event: %v", err)
 	}
 
-	err = c.Channel.Publish(
+	publishSpan.SetData("messaging.message.body.size", len(payload))
+
+	// Use the parent span's trace info to ensure the cooking span is propagated
+	err = c.channel.Publish(
 		"order_events",
 		"kitchen.order_cooked",
 		false,
 		false,
 		amqp.Publishing{
-			ContentType:  "application/x-protobuf",
-			Body:         payload,
-			MessageId:    fmt.Sprintf("order.%d", orderID),
+			ContentType: "application/x-protobuf",
+			Body:        payload,
+			Headers: amqp.Table{
+				"sentry-trace": publishSpan.ToSentryTrace(),
+				"baggage":      publishSpan.ToBaggage(),
+			},
+			MessageId:    fmt.Sprintf("kitchen.%d", orderID),
 			DeliveryMode: amqp.Persistent,
 		},
 	)
@@ -209,13 +261,12 @@ func (c *RabbitMQClient) PublishOrderCooked(ctx context.Context, metadata *event
 	}
 
 	log.Printf("✅ AMQP: Order cooked event published for order %d", orderID)
-
 	return nil
 }
 
 func (c *RabbitMQClient) Close() {
-	if c.Channel != nil {
-		c.Channel.Close()
+	if c.channel != nil {
+		c.channel.Close()
 	}
 	if c.conn != nil {
 		c.conn.Close()

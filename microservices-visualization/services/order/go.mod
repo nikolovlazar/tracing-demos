@@ -3,6 +3,7 @@ module order
 go 1.24.2
 
 require (
+	github.com/getsentry/sentry-go v0.32.0
 	github.com/golang-migrate/migrate/v4 v4.18.2
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/consul/api v1.32.0
@@ -30,4 +31,5 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	golang.org/x/exp v0.0.0-20250106191152-7588d65b2ba8 // indirect
 	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/text v0.21.0 // indirect
 )

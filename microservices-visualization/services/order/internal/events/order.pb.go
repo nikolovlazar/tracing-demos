@@ -22,75 +22,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// Common metadata for all events
-type EventMetadata struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TraceId       string                 `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
-	SpanId        string                 `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
-	Baggage       map[string]string      `protobuf:"bytes,3,rep,name=baggage,proto3" json:"baggage,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	Timestamp     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=timestamp,proto3" json:"timestamp,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EventMetadata) Reset() {
-	*x = EventMetadata{}
-	mi := &file_proto_events_order_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EventMetadata) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EventMetadata) ProtoMessage() {}
-
-func (x *EventMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EventMetadata.ProtoReflect.Descriptor instead.
-func (*EventMetadata) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *EventMetadata) GetTraceId() string {
-	if x != nil {
-		return x.TraceId
-	}
-	return ""
-}
-
-func (x *EventMetadata) GetSpanId() string {
-	if x != nil {
-		return x.SpanId
-	}
-	return ""
-}
-
-func (x *EventMetadata) GetBaggage() map[string]string {
-	if x != nil {
-		return x.Baggage
-	}
-	return nil
-}
-
-func (x *EventMetadata) GetTimestamp() *timestamppb.Timestamp {
-	if x != nil {
-		return x.Timestamp
-	}
-	return nil
-}
-
 type OrderItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -101,7 +32,7 @@ type OrderItem struct {
 
 func (x *OrderItem) Reset() {
 	*x = OrderItem{}
-	mi := &file_proto_events_order_proto_msgTypes[1]
+	mi := &file_proto_events_order_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -113,7 +44,7 @@ func (x *OrderItem) String() string {
 func (*OrderItem) ProtoMessage() {}
 
 func (x *OrderItem) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[1]
+	mi := &file_proto_events_order_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -126,7 +57,7 @@ func (x *OrderItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderItem.ProtoReflect.Descriptor instead.
 func (*OrderItem) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{1}
+	return file_proto_events_order_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *OrderItem) GetId() int32 {
@@ -145,7 +76,6 @@ func (x *OrderItem) GetQuantity() int32 {
 
 type OrderCreatedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	CustomerId    string                 `protobuf:"bytes,3,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
 	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
@@ -157,7 +87,7 @@ type OrderCreatedEvent struct {
 
 func (x *OrderCreatedEvent) Reset() {
 	*x = OrderCreatedEvent{}
-	mi := &file_proto_events_order_proto_msgTypes[2]
+	mi := &file_proto_events_order_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -169,7 +99,7 @@ func (x *OrderCreatedEvent) String() string {
 func (*OrderCreatedEvent) ProtoMessage() {}
 
 func (x *OrderCreatedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[2]
+	mi := &file_proto_events_order_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -182,14 +112,7 @@ func (x *OrderCreatedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderCreatedEvent.ProtoReflect.Descriptor instead.
 func (*OrderCreatedEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *OrderCreatedEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_order_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *OrderCreatedEvent) GetOrderId() int32 {
@@ -229,7 +152,6 @@ func (x *OrderCreatedEvent) GetItems() []*OrderItem {
 
 type InventoryReservedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	Success       bool                   `protobuf:"varint,3,opt,name=success,proto3" json:"success,omitempty"`
 	Message       string                 `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
@@ -240,7 +162,7 @@ type InventoryReservedEvent struct {
 
 func (x *InventoryReservedEvent) Reset() {
 	*x = InventoryReservedEvent{}
-	mi := &file_proto_events_order_proto_msgTypes[3]
+	mi := &file_proto_events_order_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -252,7 +174,7 @@ func (x *InventoryReservedEvent) String() string {
 func (*InventoryReservedEvent) ProtoMessage() {}
 
 func (x *InventoryReservedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[3]
+	mi := &file_proto_events_order_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -265,14 +187,7 @@ func (x *InventoryReservedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use InventoryReservedEvent.ProtoReflect.Descriptor instead.
 func (*InventoryReservedEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *InventoryReservedEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_order_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *InventoryReservedEvent) GetOrderId() int32 {
@@ -305,7 +220,6 @@ func (x *InventoryReservedEvent) GetReservedItems() []*OrderItem {
 
 type ReadyForKitchenEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	Items         []*OrderItem           `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -314,7 +228,7 @@ type ReadyForKitchenEvent struct {
 
 func (x *ReadyForKitchenEvent) Reset() {
 	*x = ReadyForKitchenEvent{}
-	mi := &file_proto_events_order_proto_msgTypes[4]
+	mi := &file_proto_events_order_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -326,7 +240,7 @@ func (x *ReadyForKitchenEvent) String() string {
 func (*ReadyForKitchenEvent) ProtoMessage() {}
 
 func (x *ReadyForKitchenEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[4]
+	mi := &file_proto_events_order_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -339,14 +253,7 @@ func (x *ReadyForKitchenEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ReadyForKitchenEvent.ProtoReflect.Descriptor instead.
 func (*ReadyForKitchenEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *ReadyForKitchenEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_order_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *ReadyForKitchenEvent) GetOrderId() int32 {
@@ -365,7 +272,6 @@ func (x *ReadyForKitchenEvent) GetItems() []*OrderItem {
 
 type KitchenAcceptedOrderEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -373,7 +279,7 @@ type KitchenAcceptedOrderEvent struct {
 
 func (x *KitchenAcceptedOrderEvent) Reset() {
 	*x = KitchenAcceptedOrderEvent{}
-	mi := &file_proto_events_order_proto_msgTypes[5]
+	mi := &file_proto_events_order_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -385,7 +291,7 @@ func (x *KitchenAcceptedOrderEvent) String() string {
 func (*KitchenAcceptedOrderEvent) ProtoMessage() {}
 
 func (x *KitchenAcceptedOrderEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[5]
+	mi := &file_proto_events_order_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -398,14 +304,7 @@ func (x *KitchenAcceptedOrderEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use KitchenAcceptedOrderEvent.ProtoReflect.Descriptor instead.
 func (*KitchenAcceptedOrderEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *KitchenAcceptedOrderEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_order_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *KitchenAcceptedOrderEvent) GetOrderId() int32 {
@@ -417,7 +316,6 @@ func (x *KitchenAcceptedOrderEvent) GetOrderId() int32 {
 
 type OrderCookedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	Items         []*OrderItem           `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -426,7 +324,7 @@ type OrderCookedEvent struct {
 
 func (x *OrderCookedEvent) Reset() {
 	*x = OrderCookedEvent{}
-	mi := &file_proto_events_order_proto_msgTypes[6]
+	mi := &file_proto_events_order_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -438,7 +336,7 @@ func (x *OrderCookedEvent) String() string {
 func (*OrderCookedEvent) ProtoMessage() {}
 
 func (x *OrderCookedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[6]
+	mi := &file_proto_events_order_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -451,14 +349,7 @@ func (x *OrderCookedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderCookedEvent.ProtoReflect.Descriptor instead.
 func (*OrderCookedEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *OrderCookedEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_order_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *OrderCookedEvent) GetOrderId() int32 {
@@ -477,7 +368,6 @@ func (x *OrderCookedEvent) GetItems() []*OrderItem {
 
 type OrderReadyForDeliveryEvent struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	Metadata        *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId         int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	Items           []*OrderItem           `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
 	DeliveryAddress string                 `protobuf:"bytes,4,opt,name=delivery_address,json=deliveryAddress,proto3" json:"delivery_address,omitempty"`
@@ -488,7 +378,7 @@ type OrderReadyForDeliveryEvent struct {
 
 func (x *OrderReadyForDeliveryEvent) Reset() {
 	*x = OrderReadyForDeliveryEvent{}
-	mi := &file_proto_events_order_proto_msgTypes[7]
+	mi := &file_proto_events_order_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -500,7 +390,7 @@ func (x *OrderReadyForDeliveryEvent) String() string {
 func (*OrderReadyForDeliveryEvent) ProtoMessage() {}
 
 func (x *OrderReadyForDeliveryEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[7]
+	mi := &file_proto_events_order_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -513,14 +403,7 @@ func (x *OrderReadyForDeliveryEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderReadyForDeliveryEvent.ProtoReflect.Descriptor instead.
 func (*OrderReadyForDeliveryEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{7}
-}
-
-func (x *OrderReadyForDeliveryEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_order_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *OrderReadyForDeliveryEvent) GetOrderId() int32 {
@@ -553,7 +436,6 @@ func (x *OrderReadyForDeliveryEvent) GetCustomerId() string {
 
 type DeliveryStartedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -561,7 +443,7 @@ type DeliveryStartedEvent struct {
 
 func (x *DeliveryStartedEvent) Reset() {
 	*x = DeliveryStartedEvent{}
-	mi := &file_proto_events_order_proto_msgTypes[8]
+	mi := &file_proto_events_order_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -573,7 +455,7 @@ func (x *DeliveryStartedEvent) String() string {
 func (*DeliveryStartedEvent) ProtoMessage() {}
 
 func (x *DeliveryStartedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[8]
+	mi := &file_proto_events_order_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -586,14 +468,7 @@ func (x *DeliveryStartedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeliveryStartedEvent.ProtoReflect.Descriptor instead.
 func (*DeliveryStartedEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{8}
-}
-
-func (x *DeliveryStartedEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_order_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *DeliveryStartedEvent) GetOrderId() int32 {
@@ -605,7 +480,6 @@ func (x *DeliveryStartedEvent) GetOrderId() int32 {
 
 type DeliveryCompletedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -613,7 +487,7 @@ type DeliveryCompletedEvent struct {
 
 func (x *DeliveryCompletedEvent) Reset() {
 	*x = DeliveryCompletedEvent{}
-	mi := &file_proto_events_order_proto_msgTypes[9]
+	mi := &file_proto_events_order_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -625,7 +499,7 @@ func (x *DeliveryCompletedEvent) String() string {
 func (*DeliveryCompletedEvent) ProtoMessage() {}
 
 func (x *DeliveryCompletedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_order_proto_msgTypes[9]
+	mi := &file_proto_events_order_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -638,14 +512,7 @@ func (x *DeliveryCompletedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeliveryCompletedEvent.ProtoReflect.Descriptor instead.
 func (*DeliveryCompletedEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_order_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *DeliveryCompletedEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_order_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *DeliveryCompletedEvent) GetOrderId() int32 {
@@ -659,56 +526,40 @@ var File_proto_events_order_proto protoreflect.FileDescriptor
 
 const file_proto_events_order_proto_rawDesc = "" +
 	"\n" +
-	"\x18proto/events/order.proto\x12\x06events\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf7\x01\n" +
-	"\rEventMetadata\x12\x19\n" +
-	"\btrace_id\x18\x01 \x01(\tR\atraceId\x12\x17\n" +
-	"\aspan_id\x18\x02 \x01(\tR\x06spanId\x12<\n" +
-	"\abaggage\x18\x03 \x03(\v2\".events.EventMetadata.BaggageEntryR\abaggage\x128\n" +
-	"\ttimestamp\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\ttimestamp\x1a:\n" +
-	"\fBaggageEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"7\n" +
+	"\x18proto/events/order.proto\x12\x06events\x1a\x1fgoogle/protobuf/timestamp.proto\"7\n" +
 	"\tOrderItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1a\n" +
-	"\bquantity\x18\x02 \x01(\x05R\bquantity\"\xfe\x01\n" +
-	"\x11OrderCreatedEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
+	"\bquantity\x18\x02 \x01(\x05R\bquantity\"\xcb\x01\n" +
+	"\x11OrderCreatedEvent\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\x05R\aorderId\x12\x1f\n" +
 	"\vcustomer_id\x18\x03 \x01(\tR\n" +
 	"customerId\x12\x16\n" +
 	"\x06status\x18\x04 \x01(\tR\x06status\x129\n" +
 	"\n" +
 	"created_at\x18\x05 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12'\n" +
-	"\x05items\x18\x06 \x03(\v2\x11.events.OrderItemR\x05items\"\xd4\x01\n" +
-	"\x16InventoryReservedEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
+	"\x05items\x18\x06 \x03(\v2\x11.events.OrderItemR\x05items\"\xa1\x01\n" +
+	"\x16InventoryReservedEvent\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\x05R\aorderId\x12\x18\n" +
 	"\asuccess\x18\x03 \x01(\bR\asuccess\x12\x18\n" +
 	"\amessage\x18\x04 \x01(\tR\amessage\x128\n" +
-	"\x0ereserved_items\x18\x05 \x03(\v2\x11.events.OrderItemR\rreservedItems\"\x8d\x01\n" +
-	"\x14ReadyForKitchenEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
+	"\x0ereserved_items\x18\x05 \x03(\v2\x11.events.OrderItemR\rreservedItems\"Z\n" +
+	"\x14ReadyForKitchenEvent\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\x05R\aorderId\x12'\n" +
-	"\x05items\x18\x03 \x03(\v2\x11.events.OrderItemR\x05items\"i\n" +
-	"\x19KitchenAcceptedOrderEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
-	"\border_id\x18\x02 \x01(\x05R\aorderId\"\x89\x01\n" +
-	"\x10OrderCookedEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
+	"\x05items\x18\x03 \x03(\v2\x11.events.OrderItemR\x05items\"6\n" +
+	"\x19KitchenAcceptedOrderEvent\x12\x19\n" +
+	"\border_id\x18\x02 \x01(\x05R\aorderId\"V\n" +
+	"\x10OrderCookedEvent\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\x05R\aorderId\x12'\n" +
-	"\x05items\x18\x03 \x03(\v2\x11.events.OrderItemR\x05items\"\xdf\x01\n" +
-	"\x1aOrderReadyForDeliveryEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
+	"\x05items\x18\x03 \x03(\v2\x11.events.OrderItemR\x05items\"\xac\x01\n" +
+	"\x1aOrderReadyForDeliveryEvent\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\x05R\aorderId\x12'\n" +
 	"\x05items\x18\x03 \x03(\v2\x11.events.OrderItemR\x05items\x12)\n" +
 	"\x10delivery_address\x18\x04 \x01(\tR\x0fdeliveryAddress\x12\x1f\n" +
 	"\vcustomer_id\x18\x05 \x01(\tR\n" +
-	"customerId\"d\n" +
-	"\x14DeliveryStartedEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
-	"\border_id\x18\x02 \x01(\x05R\aorderId\"f\n" +
-	"\x16DeliveryCompletedEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
+	"customerId\"1\n" +
+	"\x14DeliveryStartedEvent\x12\x19\n" +
+	"\border_id\x18\x02 \x01(\x05R\aorderId\"3\n" +
+	"\x16DeliveryCompletedEvent\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\x05R\aorderIdB\x17Z\x15order/internal/eventsb\x06proto3"
 
 var (
@@ -723,43 +574,31 @@ func file_proto_events_order_proto_rawDescGZIP() []byte {
 	return file_proto_events_order_proto_rawDescData
 }
 
-var file_proto_events_order_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
+var file_proto_events_order_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_proto_events_order_proto_goTypes = []any{
-	(*EventMetadata)(nil),              // 0: events.EventMetadata
-	(*OrderItem)(nil),                  // 1: events.OrderItem
-	(*OrderCreatedEvent)(nil),          // 2: events.OrderCreatedEvent
-	(*InventoryReservedEvent)(nil),     // 3: events.InventoryReservedEvent
-	(*ReadyForKitchenEvent)(nil),       // 4: events.ReadyForKitchenEvent
-	(*KitchenAcceptedOrderEvent)(nil),  // 5: events.KitchenAcceptedOrderEvent
-	(*OrderCookedEvent)(nil),           // 6: events.OrderCookedEvent
-	(*OrderReadyForDeliveryEvent)(nil), // 7: events.OrderReadyForDeliveryEvent
-	(*DeliveryStartedEvent)(nil),       // 8: events.DeliveryStartedEvent
-	(*DeliveryCompletedEvent)(nil),     // 9: events.DeliveryCompletedEvent
-	nil,                                // 10: events.EventMetadata.BaggageEntry
-	(*timestamppb.Timestamp)(nil),      // 11: google.protobuf.Timestamp
+	(*OrderItem)(nil),                  // 0: events.OrderItem
+	(*OrderCreatedEvent)(nil),          // 1: events.OrderCreatedEvent
+	(*InventoryReservedEvent)(nil),     // 2: events.InventoryReservedEvent
+	(*ReadyForKitchenEvent)(nil),       // 3: events.ReadyForKitchenEvent
+	(*KitchenAcceptedOrderEvent)(nil),  // 4: events.KitchenAcceptedOrderEvent
+	(*OrderCookedEvent)(nil),           // 5: events.OrderCookedEvent
+	(*OrderReadyForDeliveryEvent)(nil), // 6: events.OrderReadyForDeliveryEvent
+	(*DeliveryStartedEvent)(nil),       // 7: events.DeliveryStartedEvent
+	(*DeliveryCompletedEvent)(nil),     // 8: events.DeliveryCompletedEvent
+	(*timestamppb.Timestamp)(nil),      // 9: google.protobuf.Timestamp
 }
 var file_proto_events_order_proto_depIdxs = []int32{
-	10, // 0: events.EventMetadata.baggage:type_name -> events.EventMetadata.BaggageEntry
-	11, // 1: events.EventMetadata.timestamp:type_name -> google.protobuf.Timestamp
-	0,  // 2: events.OrderCreatedEvent.metadata:type_name -> events.EventMetadata
-	11, // 3: events.OrderCreatedEvent.created_at:type_name -> google.protobuf.Timestamp
-	1,  // 4: events.OrderCreatedEvent.items:type_name -> events.OrderItem
-	0,  // 5: events.InventoryReservedEvent.metadata:type_name -> events.EventMetadata
-	1,  // 6: events.InventoryReservedEvent.reserved_items:type_name -> events.OrderItem
-	0,  // 7: events.ReadyForKitchenEvent.metadata:type_name -> events.EventMetadata
-	1,  // 8: events.ReadyForKitchenEvent.items:type_name -> events.OrderItem
-	0,  // 9: events.KitchenAcceptedOrderEvent.metadata:type_name -> events.EventMetadata
-	0,  // 10: events.OrderCookedEvent.metadata:type_name -> events.EventMetadata
-	1,  // 11: events.OrderCookedEvent.items:type_name -> events.OrderItem
-	0,  // 12: events.OrderReadyForDeliveryEvent.metadata:type_name -> events.EventMetadata
-	1,  // 13: events.OrderReadyForDeliveryEvent.items:type_name -> events.OrderItem
-	0,  // 14: events.DeliveryStartedEvent.metadata:type_name -> events.EventMetadata
-	0,  // 15: events.DeliveryCompletedEvent.metadata:type_name -> events.EventMetadata
-	16, // [16:16] is the sub-list for method output_type
-	16, // [16:16] is the sub-list for method input_type
-	16, // [16:16] is the sub-list for extension type_name
-	16, // [16:16] is the sub-list for extension extendee
-	0,  // [0:16] is the sub-list for field type_name
+	9, // 0: events.OrderCreatedEvent.created_at:type_name -> google.protobuf.Timestamp
+	0, // 1: events.OrderCreatedEvent.items:type_name -> events.OrderItem
+	0, // 2: events.InventoryReservedEvent.reserved_items:type_name -> events.OrderItem
+	0, // 3: events.ReadyForKitchenEvent.items:type_name -> events.OrderItem
+	0, // 4: events.OrderCookedEvent.items:type_name -> events.OrderItem
+	0, // 5: events.OrderReadyForDeliveryEvent.items:type_name -> events.OrderItem
+	6, // [6:6] is the sub-list for method output_type
+	6, // [6:6] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_proto_events_order_proto_init() }
@@ -773,7 +612,7 @@ func file_proto_events_order_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_events_order_proto_rawDesc), len(file_proto_events_order_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   11,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

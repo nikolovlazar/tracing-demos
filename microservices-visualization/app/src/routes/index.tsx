@@ -2,6 +2,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
+import * as Sentry from '@sentry/tanstackstart-react';
+import { getHeaders } from '@tanstack/react-start/server';
 
 interface CartItem {
   id: number;
@@ -108,18 +110,32 @@ function HomePage() {
     const form = e.currentTarget;
     const formData = new FormData(form);
 
-    placeOrder.mutate({
-      data: {
-        customerId: formData.get('customerId') as string,
-        deliveryAddress: formData.get('deliveryAddress') as string,
-        items: cartItems.map((item) => ({
-          id: item.id,
-          name: item.name,
-          quantity: item.quantity,
-          price: item.price,
-        })),
+    Sentry.startSpan(
+      {
+        name: 'Place Order',
+        op: 'function',
       },
-    });
+      (span) => {
+        const traceHeader = Sentry.spanToTraceHeader(span);
+        const baggage = Sentry.spanToBaggageHeader(span);
+        placeOrder.mutate({
+          headers: {
+            'sentry-trace': traceHeader,
+            baggage: baggage ?? '',
+          },
+          data: {
+            customerId: formData.get('customerId') as string,
+            deliveryAddress: formData.get('deliveryAddress') as string,
+            items: cartItems.map((item) => ({
+              id: item.id,
+              name: item.name,
+              quantity: item.quantity,
+              price: item.price,
+            })),
+          },
+        });
+      }
+    );
   };
 
   return (

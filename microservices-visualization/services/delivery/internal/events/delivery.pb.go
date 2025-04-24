@@ -22,66 +22,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-type EventMetadata struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	TraceId       string                 `protobuf:"bytes,1,opt,name=trace_id,json=traceId,proto3" json:"trace_id,omitempty"`
-	SpanId        string                 `protobuf:"bytes,2,opt,name=span_id,json=spanId,proto3" json:"span_id,omitempty"`
-	Baggage       map[string]string      `protobuf:"bytes,3,rep,name=baggage,proto3" json:"baggage,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EventMetadata) Reset() {
-	*x = EventMetadata{}
-	mi := &file_proto_events_delivery_proto_msgTypes[0]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EventMetadata) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EventMetadata) ProtoMessage() {}
-
-func (x *EventMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_delivery_proto_msgTypes[0]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EventMetadata.ProtoReflect.Descriptor instead.
-func (*EventMetadata) Descriptor() ([]byte, []int) {
-	return file_proto_events_delivery_proto_rawDescGZIP(), []int{0}
-}
-
-func (x *EventMetadata) GetTraceId() string {
-	if x != nil {
-		return x.TraceId
-	}
-	return ""
-}
-
-func (x *EventMetadata) GetSpanId() string {
-	if x != nil {
-		return x.SpanId
-	}
-	return ""
-}
-
-func (x *EventMetadata) GetBaggage() map[string]string {
-	if x != nil {
-		return x.Baggage
-	}
-	return nil
-}
-
 type OrderItem struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int32                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -92,7 +32,7 @@ type OrderItem struct {
 
 func (x *OrderItem) Reset() {
 	*x = OrderItem{}
-	mi := &file_proto_events_delivery_proto_msgTypes[1]
+	mi := &file_proto_events_delivery_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -104,7 +44,7 @@ func (x *OrderItem) String() string {
 func (*OrderItem) ProtoMessage() {}
 
 func (x *OrderItem) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_delivery_proto_msgTypes[1]
+	mi := &file_proto_events_delivery_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -117,7 +57,7 @@ func (x *OrderItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderItem.ProtoReflect.Descriptor instead.
 func (*OrderItem) Descriptor() ([]byte, []int) {
-	return file_proto_events_delivery_proto_rawDescGZIP(), []int{1}
+	return file_proto_events_delivery_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *OrderItem) GetId() int32 {
@@ -136,7 +76,6 @@ func (x *OrderItem) GetQuantity() int32 {
 
 type OrderReadyForDeliveryEvent struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	Metadata        *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId         int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	Items           []*OrderItem           `protobuf:"bytes,3,rep,name=items,proto3" json:"items,omitempty"`
 	DeliveryAddress string                 `protobuf:"bytes,4,opt,name=delivery_address,json=deliveryAddress,proto3" json:"delivery_address,omitempty"`
@@ -147,7 +86,7 @@ type OrderReadyForDeliveryEvent struct {
 
 func (x *OrderReadyForDeliveryEvent) Reset() {
 	*x = OrderReadyForDeliveryEvent{}
-	mi := &file_proto_events_delivery_proto_msgTypes[2]
+	mi := &file_proto_events_delivery_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -159,7 +98,7 @@ func (x *OrderReadyForDeliveryEvent) String() string {
 func (*OrderReadyForDeliveryEvent) ProtoMessage() {}
 
 func (x *OrderReadyForDeliveryEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_delivery_proto_msgTypes[2]
+	mi := &file_proto_events_delivery_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -172,14 +111,7 @@ func (x *OrderReadyForDeliveryEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use OrderReadyForDeliveryEvent.ProtoReflect.Descriptor instead.
 func (*OrderReadyForDeliveryEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_delivery_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *OrderReadyForDeliveryEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_delivery_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *OrderReadyForDeliveryEvent) GetOrderId() int32 {
@@ -212,7 +144,6 @@ func (x *OrderReadyForDeliveryEvent) GetCustomerId() string {
 
 type DeliveryStartedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -220,7 +151,7 @@ type DeliveryStartedEvent struct {
 
 func (x *DeliveryStartedEvent) Reset() {
 	*x = DeliveryStartedEvent{}
-	mi := &file_proto_events_delivery_proto_msgTypes[3]
+	mi := &file_proto_events_delivery_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -232,7 +163,7 @@ func (x *DeliveryStartedEvent) String() string {
 func (*DeliveryStartedEvent) ProtoMessage() {}
 
 func (x *DeliveryStartedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_delivery_proto_msgTypes[3]
+	mi := &file_proto_events_delivery_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -245,14 +176,7 @@ func (x *DeliveryStartedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeliveryStartedEvent.ProtoReflect.Descriptor instead.
 func (*DeliveryStartedEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_delivery_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *DeliveryStartedEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_delivery_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *DeliveryStartedEvent) GetOrderId() int32 {
@@ -264,7 +188,6 @@ func (x *DeliveryStartedEvent) GetOrderId() int32 {
 
 type DeliveryCompletedEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Metadata      *EventMetadata         `protobuf:"bytes,1,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	OrderId       int32                  `protobuf:"varint,2,opt,name=order_id,json=orderId,proto3" json:"order_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -272,7 +195,7 @@ type DeliveryCompletedEvent struct {
 
 func (x *DeliveryCompletedEvent) Reset() {
 	*x = DeliveryCompletedEvent{}
-	mi := &file_proto_events_delivery_proto_msgTypes[4]
+	mi := &file_proto_events_delivery_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -284,7 +207,7 @@ func (x *DeliveryCompletedEvent) String() string {
 func (*DeliveryCompletedEvent) ProtoMessage() {}
 
 func (x *DeliveryCompletedEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_proto_events_delivery_proto_msgTypes[4]
+	mi := &file_proto_events_delivery_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -297,14 +220,7 @@ func (x *DeliveryCompletedEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeliveryCompletedEvent.ProtoReflect.Descriptor instead.
 func (*DeliveryCompletedEvent) Descriptor() ([]byte, []int) {
-	return file_proto_events_delivery_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *DeliveryCompletedEvent) GetMetadata() *EventMetadata {
-	if x != nil {
-		return x.Metadata
-	}
-	return nil
+	return file_proto_events_delivery_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *DeliveryCompletedEvent) GetOrderId() int32 {
@@ -318,29 +234,19 @@ var File_proto_events_delivery_proto protoreflect.FileDescriptor
 
 const file_proto_events_delivery_proto_rawDesc = "" +
 	"\n" +
-	"\x1bproto/events/delivery.proto\x12\x06events\x1a\x1fgoogle/protobuf/timestamp.proto\"\xbd\x01\n" +
-	"\rEventMetadata\x12\x19\n" +
-	"\btrace_id\x18\x01 \x01(\tR\atraceId\x12\x17\n" +
-	"\aspan_id\x18\x02 \x01(\tR\x06spanId\x12<\n" +
-	"\abaggage\x18\x03 \x03(\v2\".events.EventMetadata.BaggageEntryR\abaggage\x1a:\n" +
-	"\fBaggageEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"7\n" +
+	"\x1bproto/events/delivery.proto\x12\x06events\x1a\x1fgoogle/protobuf/timestamp.proto\"7\n" +
 	"\tOrderItem\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x1a\n" +
-	"\bquantity\x18\x02 \x01(\x05R\bquantity\"\xdf\x01\n" +
-	"\x1aOrderReadyForDeliveryEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
+	"\bquantity\x18\x02 \x01(\x05R\bquantity\"\xac\x01\n" +
+	"\x1aOrderReadyForDeliveryEvent\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\x05R\aorderId\x12'\n" +
 	"\x05items\x18\x03 \x03(\v2\x11.events.OrderItemR\x05items\x12)\n" +
 	"\x10delivery_address\x18\x04 \x01(\tR\x0fdeliveryAddress\x12\x1f\n" +
 	"\vcustomer_id\x18\x05 \x01(\tR\n" +
-	"customerId\"d\n" +
-	"\x14DeliveryStartedEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
-	"\border_id\x18\x02 \x01(\x05R\aorderId\"f\n" +
-	"\x16DeliveryCompletedEvent\x121\n" +
-	"\bmetadata\x18\x01 \x01(\v2\x15.events.EventMetadataR\bmetadata\x12\x19\n" +
+	"customerId\"1\n" +
+	"\x14DeliveryStartedEvent\x12\x19\n" +
+	"\border_id\x18\x02 \x01(\x05R\aorderId\"3\n" +
+	"\x16DeliveryCompletedEvent\x12\x19\n" +
 	"\border_id\x18\x02 \x01(\x05R\aorderIdB\x1aZ\x18delivery/internal/eventsb\x06proto3"
 
 var (
@@ -355,26 +261,20 @@ func file_proto_events_delivery_proto_rawDescGZIP() []byte {
 	return file_proto_events_delivery_proto_rawDescData
 }
 
-var file_proto_events_delivery_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
+var file_proto_events_delivery_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_proto_events_delivery_proto_goTypes = []any{
-	(*EventMetadata)(nil),              // 0: events.EventMetadata
-	(*OrderItem)(nil),                  // 1: events.OrderItem
-	(*OrderReadyForDeliveryEvent)(nil), // 2: events.OrderReadyForDeliveryEvent
-	(*DeliveryStartedEvent)(nil),       // 3: events.DeliveryStartedEvent
-	(*DeliveryCompletedEvent)(nil),     // 4: events.DeliveryCompletedEvent
-	nil,                                // 5: events.EventMetadata.BaggageEntry
+	(*OrderItem)(nil),                  // 0: events.OrderItem
+	(*OrderReadyForDeliveryEvent)(nil), // 1: events.OrderReadyForDeliveryEvent
+	(*DeliveryStartedEvent)(nil),       // 2: events.DeliveryStartedEvent
+	(*DeliveryCompletedEvent)(nil),     // 3: events.DeliveryCompletedEvent
 }
 var file_proto_events_delivery_proto_depIdxs = []int32{
-	5, // 0: events.EventMetadata.baggage:type_name -> events.EventMetadata.BaggageEntry
-	0, // 1: events.OrderReadyForDeliveryEvent.metadata:type_name -> events.EventMetadata
-	1, // 2: events.OrderReadyForDeliveryEvent.items:type_name -> events.OrderItem
-	0, // 3: events.DeliveryStartedEvent.metadata:type_name -> events.EventMetadata
-	0, // 4: events.DeliveryCompletedEvent.metadata:type_name -> events.EventMetadata
-	5, // [5:5] is the sub-list for method output_type
-	5, // [5:5] is the sub-list for method input_type
-	5, // [5:5] is the sub-list for extension type_name
-	5, // [5:5] is the sub-list for extension extendee
-	0, // [0:5] is the sub-list for field type_name
+	0, // 0: events.OrderReadyForDeliveryEvent.items:type_name -> events.OrderItem
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_proto_events_delivery_proto_init() }
@@ -388,7 +288,7 @@ func file_proto_events_delivery_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_events_delivery_proto_rawDesc), len(file_proto_events_delivery_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   6,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

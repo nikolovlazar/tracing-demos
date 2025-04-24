@@ -8,7 +8,7 @@ import { createRouter } from './router';
 const router = createRouter();
 
 Sentry.init({
-  dsn: process.env.VITE_SENTRY_DSN,
+  dsn: 'https://382128e6ec4d247dd107546a6331e90b@o4506044970565632.ingest.us.sentry.io/4509119594364928',
   debug: true,
   integrations: [
     Sentry.tanstackRouterBrowserTracingIntegration(router),

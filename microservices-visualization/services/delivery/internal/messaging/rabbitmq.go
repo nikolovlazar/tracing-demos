@@ -109,8 +109,8 @@ func (c *RabbitMQClient) ConsumeEvents(
 
 	go func() {
 		for msg := range msgs {
-			sentryTrace := msg.Headers["sentry-trace"].(string)
-			baggage := msg.Headers["baggage"].(string)
+			sentryTrace := msg.Headers[sentry.SentryTraceHeader].(string)
+			baggage := msg.Headers[sentry.SentryBaggageHeader].(string)
 			continueOptions := sentry.ContinueFromHeaders(sentryTrace, baggage)
 
 			processTx := sentry.StartTransaction(ctx, "queue.process", continueOptions)
@@ -190,8 +190,8 @@ func (c *RabbitMQClient) PublishDeliveryStarted(ctx context.Context, orderID int
 			ContentType: "application/x-protobuf",
 			Body:        payload,
 			Headers: amqp.Table{
-				"sentry-trace": parentSpan.ToSentryTrace(),
-				"baggage":      parentSpan.ToBaggage(),
+				sentry.SentryTraceHeader:   parentSpan.ToSentryTrace(),
+				sentry.SentryBaggageHeader: parentSpan.ToBaggage(),
 			},
 			MessageId:    fmt.Sprintf("delivery.%d", orderID),
 			DeliveryMode: amqp.Persistent,
@@ -235,8 +235,8 @@ func (c *RabbitMQClient) PublishDeliveryCompleted(ctx context.Context, orderID i
 			ContentType: "application/x-protobuf",
 			Body:        payload,
 			Headers: amqp.Table{
-				"sentry-trace": publishSpan.ToSentryTrace(),
-				"baggage":      publishSpan.ToBaggage(),
+				sentry.SentryTraceHeader:   publishSpan.ToSentryTrace(),
+				sentry.SentryBaggageHeader: publishSpan.ToBaggage(),
 			},
 			MessageId:    fmt.Sprintf("delivery.%d", orderID),
 			DeliveryMode: amqp.Persistent,

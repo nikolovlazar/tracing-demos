@@ -51,8 +51,8 @@ func processHRReport(ctx context.Context, data *employeeData) {
 func main() {
 	// Initialize Sentry
 	err := sentry.Init(sentry.ClientOptions{
-		Dsn:            "https://1fca7e4659d55182835b0c6983ef4d4a@o4506044970565632.ingest.us.sentry.io/4509039649292288", // Replace with your actual DSN
-		EnableTracing:  true,
+		Dsn:              "https://1fca7e4659d55182835b0c6983ef4d4a@o4506044970565632.ingest.us.sentry.io/4509039649292288", // Replace with your actual DSN
+		EnableTracing:    true,
 		TracesSampleRate: 1.0,
 		AttachStacktrace: true,
 	})
@@ -79,11 +79,11 @@ func main() {
 	// Declare the queue
 	q, err := ch.QueueDeclare(
 		config.QueueName, // name
-		true,            // durable
-		false,           // delete when unused
-		false,           // exclusive
-		false,           // no-wait
-		nil,             // arguments
+		true,             // durable
+		false,            // delete when unused
+		false,            // exclusive
+		false,            // no-wait
+		nil,              // arguments
 	)
 	if err != nil {
 		log.Fatalf("Failed to declare queue: %v", err)
@@ -135,10 +135,10 @@ func main() {
 			func() {
 				// Extract trace context from message headers
 				var traceparent, baggage string
-				if tp, ok := msg.Headers["sentry-trace"].(string); ok {
+				if tp, ok := msg.Headers[sentry.SentryTraceHeader].(string); ok {
 					traceparent = tp
 				}
-				if bg, ok := msg.Headers["baggage"].(string); ok {
+				if bg, ok := msg.Headers[sentry.SentryBaggageHeader].(string); ok {
 					baggage = bg
 				}
 

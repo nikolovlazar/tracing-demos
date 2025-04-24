@@ -1,31 +1,22 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { createServerFn } from '@tanstack/react-start';
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 import * as Sentry from '@sentry/tanstackstart-react';
-import { getHeaders } from '@tanstack/react-start/server';
-
-interface CartItem {
+import { placeOrderFn } from '../functions/place-order.function';
+export interface CartItem {
   id: number;
   name: string;
   price: number;
   quantity: number;
 }
 
-interface OrderItem {
+export interface OrderItem {
   id: number;
   name: string;
   price: number;
   quantity: number;
 }
 
-interface OrderData {
-  customerId: string;
-  deliveryAddress: string;
-  items: OrderItem[];
-}
-
-// Mock cart data
 const cartItems: CartItem[] = [
   {
     id: 1,
@@ -46,42 +37,6 @@ const cartItems: CartItem[] = [
     quantity: 1,
   },
 ];
-
-const placeOrderFn = createServerFn({
-  method: 'POST',
-})
-  .validator((data: OrderData): OrderData => {
-    if (!data.customerId || !data.deliveryAddress || !data.items?.length) {
-      throw new Error('Missing required fields');
-    }
-
-    return {
-      customerId: data.customerId,
-      deliveryAddress: data.deliveryAddress,
-      items: data.items.map((item) => ({
-        id: item.id,
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    };
-  })
-  .handler(async ({ data }) => {
-    const response = await fetch(`${process.env.API_URL}/orders`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(data),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Failed to place order: ${errorData.message}`);
-    }
-
-    return await response.json();
-  });
 
 function HomePage() {
   const [orderStatus, setOrderStatus] = useState<'idle' | 'success' | 'error'>(
@@ -116,11 +71,15 @@ function HomePage() {
         op: 'function',
       },
       (span) => {
-        const traceHeader = Sentry.spanToTraceHeader(span);
+        const sentryTrace = Sentry.spanToTraceHeader(span);
         const baggage = Sentry.spanToBaggageHeader(span);
+
+        console.log('sentryTrace: ', sentryTrace);
+        console.log('baggage: ', baggage);
+
         placeOrder.mutate({
           headers: {
-            'sentry-trace': traceHeader,
+            'sentry-trace': sentryTrace,
             baggage: baggage ?? '',
           },
           data: {

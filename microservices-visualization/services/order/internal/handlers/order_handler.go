@@ -33,7 +33,6 @@ func (h *OrderHandler) HandleHealthCheck(w http.ResponseWriter, r *http.Request)
 
 func (h *OrderHandler) HandleOrders(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
-		log.Println("CreateOrder")
 		h.createOrder(w, r)
 	}
 }
@@ -86,9 +85,16 @@ func (h *OrderHandler) HandleDeliveryCompleted(ctx context.Context, orderID int3
 }
 
 func (h *OrderHandler) createOrder(w http.ResponseWriter, r *http.Request) {
-	sentryTrace := r.Header.Get("sentry-trace")
-	baggage := r.Header.Get("baggage")
-	continueOptions := sentry.ContinueFromHeaders(sentryTrace, baggage)
+	sentryTrace := r.Header.Get(sentry.SentryTraceHeader)
+	baggage := r.Header.Get(sentry.SentryBaggageHeader)
+
+	log.Println("sentryTrace: ", sentryTrace)
+	log.Println("baggage: ", baggage)
+
+	ctx := r.Context()
+	hub := sentry.GetHubFromContext(ctx)
+	continueOptions := sentry.ContinueTrace(hub, sentryTrace, baggage)
+
 	transaction := sentry.StartTransaction(r.Context(), "http.server", continueOptions)
 	transaction.Description = fmt.Sprintf("%s %s", r.Method, r.URL.Path)
 

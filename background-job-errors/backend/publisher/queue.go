@@ -32,11 +32,11 @@ func NewPublisher(config shared.QueueConfig) (*Publisher, error) {
 	// Declare the queue
 	_, err = ch.QueueDeclare(
 		config.QueueName, // name
-		true,            // durable
-		false,           // delete when unused
-		false,           // exclusive
-		false,           // no-wait
-		nil,             // arguments
+		true,             // durable
+		false,            // delete when unused
+		false,            // exclusive
+		false,            // no-wait
+		nil,              // arguments
 	)
 	if err != nil {
 		ch.Close()
@@ -85,16 +85,16 @@ func (p *Publisher) PublishJob(ctx context.Context, jobID string, reportType str
 	baggage := sentry.TransactionFromContext(ctx).ToBaggage()
 
 	err = p.channel.PublishWithContext(ctx,
-		"",                // exchange
+		"",                 // exchange
 		p.config.QueueName, // routing key
-		false,             // mandatory
-		false,             // immediate
+		false,              // mandatory
+		false,              // immediate
 		amqp.Publishing{
 			ContentType: "application/json",
 			Body:        body,
 			Headers: amqp.Table{
-				"sentry-trace": traceparent,
-				"baggage":     baggage,
+				sentry.SentryTraceHeader:   traceparent,
+				sentry.SentryBaggageHeader: baggage,
 			},
 		})
 	if err != nil {

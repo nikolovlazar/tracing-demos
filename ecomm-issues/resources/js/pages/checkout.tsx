@@ -65,6 +65,12 @@ const CheckoutPage = () => {
         }
     }, [items, data, setData, totalPrice]);
 
+    useEffect(() => {
+        if (props.auth?.user?.email && data.email === '') {
+            setData({ ...data, email: props.auth.user.email });
+        }
+    }, [props, data, setData]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 

@@ -1,0 +1,227 @@
+@import 'tailwindcss';
+
+@plugin 'tailwindcss-animate';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-sans:
+        'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+:root {
+    /* Core colors */
+    --background: oklch(1 0 0);
+    --foreground: oklch(0.145 0 0);
+    --card: oklch(1 0 0);
+    --card-foreground: oklch(0.145 0 0);
+    --popover: oklch(1 0 0);
+    --popover-foreground: oklch(0.145 0 0);
+
+    /* Primary colors */
+    --primary: oklch(0.205 0 0);
+    --primary-foreground: oklch(0.985 0 0);
+
+    /* Secondary colors */
+    --secondary: oklch(0.97 0 0);
+    --secondary-foreground: oklch(0.205 0 0);
+
+    /* Muted colors */
+    --muted: oklch(0.97 0 0);
+    --muted-foreground: oklch(0.556 0 0);
+
+    /* Accent colors */
+    --accent: oklch(0.97 0 0);
+    --accent-foreground: oklch(0.205 0 0);
+
+    /* Destructive colors */
+    --destructive: oklch(0.577 0.245 27.325);
+    --destructive-foreground: oklch(0.985 0 0);
+
+    /* UI elements */
+    --border: oklch(0.922 0 0);
+    --input: oklch(0.922 0 0);
+    --ring: oklch(0.87 0 0);
+
+    /* Chart colors */
+    --chart-1: oklch(0.646 0.222 41.116);
+    --chart-2: oklch(0.6 0.118 184.704);
+    --chart-3: oklch(0.398 0.07 227.392);
+    --chart-4: oklch(0.828 0.189 84.429);
+    --chart-5: oklch(0.769 0.188 70.08);
+
+    /* Sidebar specific colors */
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.87 0 0);
+
+    /* Radius */
+    --radius: 0.625rem;
+}
+
+.dark {
+    /* Core colors from shadcn */
+    --background: oklch(0.12 0.02 260); /* 224 71% 4% */
+    --foreground: oklch(0.89 0.02 250); /* 213 31% 91% */
+    --card: oklch(0.12 0.02 260); /* 224 71% 4% */
+    --card-foreground: oklch(0.89 0.02 250); /* 213 31% 91% */
+    --popover: oklch(0.12 0.02 260); /* 224 71% 4% */
+    --popover-foreground: oklch(0.89 0.02 250); /* 213 31% 91% */
+
+    /* Primary colors from shadcn */
+    --primary: oklch(0.97 0.02 245); /* 210 40% 98% */
+    --primary-foreground: oklch(0.05 0.02 260); /* 222.2 47.4% 1.2% */
+
+    /* Secondary colors from shadcn */
+    --secondary: oklch(0.25 0.02 260); /* 222.2 47.4% 11.2% */
+    --secondary-foreground: oklch(0.97 0.02 245); /* 210 40% 98% */
+
+    /* Muted colors from shadcn */
+    --muted: oklch(0.32 0.02 255); /* 217.2 32.6% 17.5% */
+    --muted-foreground: oklch(0.67 0.02 253); /* 215 20.2% 65.1% */
+
+    /* Accent colors from shadcn */
+    --accent: oklch(0.32 0.02 255); /* 217.2 32.6% 17.5% */
+    --accent-foreground: oklch(0.97 0.02 245); /* 210 40% 98% */
+
+    /* Destructive colors from shadcn */
+    --destructive: oklch(0.35 0.15 30); /* 0 62.8% 30.6% */
+    --destructive-foreground: oklch(0.97 0.02 245); /* 210 40% 98% */
+
+    /* UI elements from shadcn */
+    --border: oklch(0.32 0.02 255); /* 217.2 32.6% 17.5% */
+    --input: oklch(0.32 0.02 255); /* 217.2 32.6% 17.5% */
+    --ring: oklch(0.82 0.02 250); /* 212.7 26.8% 83.9% */
+
+    /* Chart colors from shadcn */
+    --chart-1: oklch(0.55 0.2 265); /* 220 70% 50% */
+    --chart-2: oklch(0.6 0.15 170); /* 160 60% 45% */
+    --chart-3: oklch(0.75 0.15 80); /* 30 80% 55% */
+    --chart-4: oklch(0.65 0.2 300); /* 280 65% 60% */
+    --chart-5: oklch(0.7 0.2 0); /* 340 75% 55% */
+
+    /* Your existing sidebar colors */
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.985 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(0.269 0 0);
+    --sidebar-ring: oklch(0.439 0 0);
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+
+    body {
+        @apply bg-background text-foreground;
+    }
+}
+
+@layer components {
+    .container {
+        @apply w-full px-6 md:px-10;
+    }
+}
+
+.page-transition-enter {
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition:
+        opacity 300ms,
+        transform 300ms;
+}
+
+.page-transition-exit {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.page-transition-exit-active {
+    opacity: 0;
+    transform: translateY(-10px);
+    transition:
+        opacity 300ms,
+        transform 300ms;
+}

@@ -2,8 +2,10 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useForm } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
+import axios from 'axios';
 import { Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 type LoginForm = {
     email: string;
@@ -16,16 +18,29 @@ interface LoginDialogProps {
 }
 
 export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
-    const { data, setData, post, processing, errors, reset } = useForm<Required<LoginForm>>({
-        email: '',
-        password: '',
+    const { data, setData, processing, errors, reset } = useForm<Required<LoginForm>>({
+        email: 'admin@admin.com',
+        password: 'admin',
     });
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
-        post(route('login'), {
-            onFinish: () => reset('password'),
+
+        const response = await axios.post('/login', {
+            email: data.email,
+            password: data.password,
         });
+
+        if (response.status === 200) {
+            router.reload();
+            onOpenChange(false);
+            toast.success('Logged in successfully');
+        } else {
+            reset();
+            toast.error('Login failed', {
+                description: 'Please check your credentials and try again.',
+            });
+        }
     };
 
     return (
@@ -33,10 +48,10 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
             <DialogContent className="border-gray-800 bg-gray-900 sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle className="text-xl text-red-500">Login to ErrorFix</DialogTitle>
-                    <DialogDescription>Enter your credentials to access the multiverse's best products.</DialogDescription>
+                    <DialogDescription>Login with admin@admin.com and password "admin".</DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4 py-4">
+                <form onSubmit={handleLogin} className="space-y-4 py-4">
                     <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <Input

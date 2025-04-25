@@ -3,7 +3,8 @@
 import { useCart } from '@/context/cart-context';
 import { cn } from '@/lib/utils';
 import { SharedData } from '@/types';
-import { Link, usePage } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
+import axios from 'axios';
 import { Bug, LogOut, Menu, Search, ShoppingCart, User, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { CartModal } from './cart-modal';
@@ -119,7 +120,13 @@ export default function Header() {
                             <DropdownMenuContent align="end" className="border-gray-800 bg-gray-900">
                                 <DropdownMenuLabel className="text-red-500">{user?.name || 'User'}</DropdownMenuLabel>
                                 <DropdownMenuSeparator className="bg-gray-800" />
-                                <DropdownMenuItem className="text-destructive flex cursor-pointer items-center" onClick={() => {}}>
+                                <DropdownMenuItem
+                                    className="text-destructive flex cursor-pointer items-center"
+                                    onClick={async () => {
+                                        await axios.post('/logout');
+                                        router.reload();
+                                    }}
+                                >
                                     <LogOut className="mr-2 h-4 w-4" />
                                     <span>Logout</span>
                                 </DropdownMenuItem>

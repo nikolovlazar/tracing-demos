@@ -1,9 +1,10 @@
 import { ClientProducts } from '@/components/client-products';
 import { Hero } from '@/components/hero';
 import Layout from '@/layouts';
+import { Product } from '@/types';
 import { Head } from '@inertiajs/react';
 
-export default function Welcome() {
+export default function Welcome({ products }: { products: Product[] }) {
     return (
         <Layout>
             <Head title="ErrorFix | Goods from Beyond">
@@ -13,7 +14,7 @@ export default function Welcome() {
             </Head>
             <div className="space-y-16 pb-16">
                 <Hero />
-                <ClientProducts />
+                <ClientProducts products={products} />
             </div>
         </Layout>
     );

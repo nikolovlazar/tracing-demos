@@ -13,8 +13,24 @@ class ProductController extends Controller
      */
     public function index()
     {
+        $parent = \Sentry\SentrySDK::getCurrentHub()->getSpan();
+        $span = null;
+
+        if ($parent !== null) {
+            $context = \Sentry\Tracing\SpanContext::make()
+                ->setOp('function')
+                ->setDescription('Fetch products');
+            $span = $parent->startChild($context);
+
+            \Sentry\SentrySDK::getCurrentHub()->setSpan($span);
+        }
+
         $featuredProducts = Product::select()->where('featured', 1)->get();
         $allProducts = Product::all();
+
+        $span?->setData([ 'numFeaturedProducts' => count($featuredProducts), 'numAllProducts' => count($allProducts) ]);
+        $span?->finish();
+
         return Inertia::render('index', [ 'featuredProducts' => $featuredProducts, 'allProducts' => $allProducts ]);
     }
 

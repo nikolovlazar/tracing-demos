@@ -1,3 +1,4 @@
+import { sentryVitePlugin } from '@sentry/vite-plugin';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import laravel from 'laravel-vite-plugin';
@@ -13,13 +14,23 @@ export default defineConfig({
         }),
         react(),
         tailwindcss(),
+        sentryVitePlugin({
+            org: 'nikolovlazar',
+            project: 'ecomm-issues-react',
+        }),
     ],
+
     esbuild: {
         jsx: 'automatic',
     },
+
     resolve: {
         alias: {
             'ziggy-js': resolve(__dirname, 'vendor/tightenco/ziggy'),
         },
+    },
+
+    build: {
+        sourcemap: true,
     },
 });

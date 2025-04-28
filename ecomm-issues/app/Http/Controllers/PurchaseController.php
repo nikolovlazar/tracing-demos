@@ -27,6 +27,7 @@ class PurchaseController extends Controller
             if ($validated['email'] === 'admin@admin.com') {
                 throw new \Exception("Purchasing with the admin email is not allowed.");
             }
+
             $transactionId = Str::random(13);
 
             return response()->json([
@@ -38,6 +39,7 @@ class PurchaseController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            report($e);
 
             return response()->json([
                 'error' => 'Payment processing failed',

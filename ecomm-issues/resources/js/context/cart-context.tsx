@@ -1,10 +1,10 @@
-import { CartItem } from '@/types';
+import { CartItem, Product } from '@/types';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 interface CartContextType {
     items: CartItem[];
-    addItem: (item: CartItem) => void;
+    addItem: (product: Product, selectedSize: string, selectedColor: string, quantity: number) => CartItem;
     removeItem: (id: string, size: string, color: string) => void;
     updateQuantity: (id: string, size: string, color: string, quantity: number) => void;
     clearCart: () => void;
@@ -46,7 +46,30 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [items]);
 
-    const addItem = (newItem: CartItem) => {
+    const addItem = (product: Product, selectedSize: string, selectedColor: string, quantity: number) => {
+        // Validate that the selected size and color are available for this product
+        if (!product.sizes.includes(selectedSize)) {
+            throw new Error('Invalid size selected');
+        }
+
+        if (!product.colors.includes(selectedColor)) {
+            throw new Error('Invalid color selected');
+        }
+
+        if (quantity > product.inventory) {
+            throw new Error('Insufficient inventory');
+        }
+
+        const newItem: CartItem = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.images[0],
+            quantity,
+            selectedSize,
+            selectedColor,
+        };
+
         setItems((prevItems) => {
             // Check if item already exists with same id, size and color
             const existingItemIndex = prevItems.findIndex(
@@ -58,28 +81,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 const updatedItems = JSON.parse(JSON.stringify(prevItems));
                 updatedItems[existingItemIndex].quantity += newItem.quantity;
 
-                if (isClient.current) {
-                    setTimeout(() => {
-                        toast('Cart updated', {
-                            description: `${newItem.name} quantity updated in your cart.`,
-                        });
-                    }, 0);
-                }
-
                 return updatedItems;
             } else {
-                // Add new item
-                if (isClient.current) {
-                    setTimeout(() => {
-                        toast('Added to cart', {
-                            description: `${newItem.name} added to your cart.`,
-                        });
-                    }, 0);
-                }
-
                 return [...prevItems, newItem];
             }
         });
+
+        return newItem;
     };
 
     const removeItem = (id: string, size: string, color: string) => {

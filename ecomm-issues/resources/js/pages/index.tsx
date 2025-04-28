@@ -4,7 +4,7 @@ import Layout from '@/layouts';
 import { Product } from '@/types';
 import { Head } from '@inertiajs/react';
 
-export default function Welcome({ products }: { products: Product[] }) {
+export default function Welcome({ featuredProducts, allProducts }: { featuredProducts: Product[]; allProducts: Product[] }) {
     return (
         <Layout>
             <Head title="ErrorFix | Goods from Beyond">
@@ -14,7 +14,7 @@ export default function Welcome({ products }: { products: Product[] }) {
             </Head>
             <div className="space-y-16 pb-16">
                 <Hero />
-                <ClientProducts products={products} />
+                <ClientProducts featuredProducts={featuredProducts} allProducts={allProducts} />
             </div>
         </Layout>
     );

@@ -52,7 +52,7 @@ export interface Product {
     featured: boolean;
     sizes: string[];
     colors: string[];
-    inStock: boolean;
+    inventory: number;
     rating: number;
     reviewCount: number;
 }

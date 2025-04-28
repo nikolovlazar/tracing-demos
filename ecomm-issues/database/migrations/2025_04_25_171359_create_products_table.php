@@ -18,7 +18,7 @@ return new class extends Migration
             $table->decimal('price', 8, 2);
             $table->string('category');
             $table->boolean('featured')->default(false);
-            $table->boolean('in_stock')->default(true);
+            $table->integer('inventory')->default(0);
             $table->decimal('rating', 3, 1)->nullable();
             $table->integer('review_count')->default(0);
             $table->json('images')->default('[]');

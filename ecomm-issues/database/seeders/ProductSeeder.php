@@ -48,13 +48,13 @@ class ProductSeeder extends Seeder
                         'Automotive', 'Beauty', 'Health', 'Garden', 'Toys'
                     ]),
                     'sizes' => json_encode(fake()->randomElements([
-                        'Extra Small', 'Small', 'Medium', 'Large', 'Extra Large'
-                    ], fake()->numberBetween(2, 5))),
+                        'Small', 'Medium', 'Large', 'Extra Large'
+                    ], fake()->numberBetween(2, 4))),
                     'colors' => json_encode(fake()->randomElements([
                         'Red', 'Blue', 'Green', 'Yellow', 'Black'
                     ], fake()->numberBetween(2, 5))),
                     'featured' => $shouldBeFeatured,
-                    'in_stock' => true,
+                    'inventory' => fake()->numberBetween(3, 75),
                     'rating' => fake()->randomFloat(1, 1.5, 4.9),
                     'review_count' => fake()->numberBetween(9, 317),
                     'created_at' => now(),

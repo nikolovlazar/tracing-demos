@@ -7,6 +7,7 @@ import { Product } from '@/types';
 import { motion } from 'framer-motion';
 import { Heart, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 interface ProductDetailsProps {
     product: Product;
@@ -20,15 +21,8 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const { addItem } = useCart();
 
     const handleAddToCart = () => {
-        addItem({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            image: product.images[0],
-            quantity,
-            selectedSize,
-            selectedColor,
-        });
+        const added = addItem(product, selectedSize, selectedColor, quantity);
+        toast.success(`${added.quantity}x ${added.selectedSize} ${added.selectedColor} ${added.name} added to cart`);
     };
 
     return (
@@ -79,7 +73,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     <div>
                         <h3 className="mb-2 font-medium">Size</h3>
                         <RadioGroup value={selectedSize} onValueChange={setSelectedSize} className="flex flex-wrap gap-2">
-                            {product.sizes.map((size) => (
+                            {['Extra Small', 'Small', 'Medium', 'Large', 'Extra Large'].map((size) => (
                                 <div key={size} className="flex items-center">
                                     <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
                                     <Label
@@ -111,7 +105,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                     </div>
 
                     <div>
-                        <h3 className="mb-2 font-medium">License Quantity</h3>
+                        <h3 className="mb-2 font-medium">Quantity</h3>
                         <div className="flex items-center space-x-2">
                             <Button
                                 variant="outline"
@@ -131,6 +125,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                                 <Plus className="h-4 w-4" />
                             </Button>
                         </div>
+                        <span className="text-muted-foreground text-sm">{product.inventory} in stock</span>
                     </div>
                 </div>
 

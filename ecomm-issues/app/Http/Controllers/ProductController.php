@@ -13,8 +13,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $products = Product::all();
-        return Inertia::render('index', [ 'products' => $products ]);
+        $featuredProducts = Product::select()->where('featured', 1)->get();
+        $allProducts = Product::all();
+        return Inertia::render('index', [ 'featuredProducts' => $featuredProducts, 'allProducts' => $allProducts ]);
     }
 
     /**

@@ -18,7 +18,7 @@ class Product extends Model {
         'price',
         'category',
         'featured',
-        'in_stock',
+        'inventory',
         'rating',
         'review_count',
         'images',
@@ -34,7 +34,6 @@ class Product extends Model {
     protected $casts = [
         'price' => 'float',
         'featured' => 'boolean',
-        'in_stock' => 'boolean',
         'rating' => 'float',
         'review_count' => 'integer',
         'images' => 'array',

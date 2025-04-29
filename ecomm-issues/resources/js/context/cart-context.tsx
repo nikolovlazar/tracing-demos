@@ -48,16 +48,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const addItem = (product: Product, selectedSize: string, selectedColor: string, quantity: number) => {
         // Validate that the selected size and color are available for this product
-        if (!product.sizes.includes(selectedSize)) {
-            throw new Error('Invalid size selected');
-        }
-
-        if (!product.colors.includes(selectedColor)) {
-            throw new Error('Invalid color selected');
-        }
-
-        if (quantity > product.inventory) {
-            throw new Error('Insufficient inventory');
+        if (!product.sizes.includes(selectedSize) || !product.colors.includes(selectedColor)) {
+            throw new Error('Invalid data');
         }
 
         const newItem: CartItem = {

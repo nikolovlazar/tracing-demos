@@ -82,21 +82,29 @@ const CheckoutPage = () => {
 
         setProcessing(true);
 
-        const response = await axios.post('/purchase', data, {
-            headers: {
-                Accept: 'application/json',
-            },
-        });
-
-        if (response.status === 200) {
-            clearCart();
-            setPurchaseComplete(true);
-        } else {
-            toast.error('Error', {
-                description: response.data.message || 'An unexpected error occurred during checkout.',
+        try {
+            const response = await axios.post('/purchase', data, {
+                headers: {
+                    Accept: 'application/json',
+                },
             });
-        }
-        setProcessing(false);
+
+            if (response.status === 200) {
+                clearCart();
+                setPurchaseComplete(true);
+            }
+        } catch (error: any) {
+            if (error.response?.data?.message?.includes('admin email')) {
+                toast.error('Email Not Allowed', { 
+                    description: 'Purchasing with the admin email is not allowed. Please use a different email address.'
+                });
+            } else {
+                toast.error('Error', {
+                    description: error.response?.data?.message || 'An unexpected error occurred during checkout.',
+                });
+            }
+        } finally {
+            setProcessing(false);
     };
 
     if (purchaseComplete) {

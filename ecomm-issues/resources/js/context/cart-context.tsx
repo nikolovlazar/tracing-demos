@@ -1,4 +1,5 @@
 import { CartItem, Product } from '@/types';
+import * as Sentry from '@sentry/react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
@@ -48,8 +49,21 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     const addItem = (product: Product, selectedSize: string, selectedColor: string, quantity: number) => {
         // Validate that the selected size and color are available for this product
-        if (!product.sizes.includes(selectedSize) || !product.colors.includes(selectedColor)) {
-            throw new Error('Invalid data');
+        if (!product.sizes.includes(selectedSize)) {
+            Sentry.setContext('Sizes', {
+                productId: product.id,
+                productSizes: product.sizes,
+                selectedSize,
+            });
+            throw new Error('The selected size is not available for this product');
+        }
+        if (!product.colors.includes(selectedColor)) {
+            Sentry.setContext('Colors', {
+                productId: product.id,
+                productColors: product.colors,
+                selectedColor,
+            });
+            throw new Error('The selected color is not available for this product');
         }
 
         const newItem: CartItem = {

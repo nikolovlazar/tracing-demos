@@ -1,6 +1,6 @@
-import type { OrderItem } from '@/routes';
-import { createServerFn } from '@tanstack/react-start';
-import { getHeaders } from '@tanstack/start-server-core';
+import type { OrderItem } from "@/routes";
+import { createServerFn } from "@tanstack/react-start";
+import { getHeaders } from "@tanstack/start-server-core";
 
 interface OrderData {
   customerId: string;
@@ -9,11 +9,11 @@ interface OrderData {
 }
 
 export const placeOrderFn = createServerFn({
-  method: 'POST',
+  method: "POST",
 })
   .validator((data: OrderData): OrderData => {
     if (!data.customerId || !data.deliveryAddress || !data.items?.length) {
-      throw new Error('Missing required fields');
+      throw new Error("Missing required fields");
     }
 
     return {
@@ -29,17 +29,17 @@ export const placeOrderFn = createServerFn({
   })
   .handler(async ({ data }) => {
     const headers = getHeaders();
-    const sentryTrace = headers['sentry-trace'] ?? '';
-    const baggage = headers['baggage'] ?? '';
+    const sentryTrace = headers["sentry-trace"] ?? "";
+    const baggage = headers.baggage ?? "";
 
-    console.log('sentryTrace: ', sentryTrace);
-    console.log('baggage: ', baggage);
+    console.log("sentryTrace: ", sentryTrace);
+    console.log("baggage: ", baggage);
 
     const response = await fetch(`${process.env.API_URL}/orders`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'sentry-trace': sentryTrace,
+        "Content-Type": "application/json",
+        "sentry-trace": sentryTrace,
         baggage: baggage,
       },
       body: JSON.stringify(data),

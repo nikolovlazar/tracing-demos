@@ -10,7 +10,7 @@ services:
         - SENTRY_DSN=${APP_SENTRY_DSN}
         - VITE_SENTRY_DSN=${APP_SENTRY_DSN}
     ports:
-      - '4000:3000'
+      - '3000:3000'
     depends_on:
       kong:
         condition: service_healthy

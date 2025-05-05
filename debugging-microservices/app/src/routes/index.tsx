@@ -70,28 +70,35 @@ function HomePage() {
         name: 'Place Order',
         op: 'function',
       },
-      (span) => {
+      async (span) => {
         const sentryTrace = Sentry.spanToTraceHeader(span);
         const baggage = Sentry.spanToBaggageHeader(span);
 
-        console.log('sentryTrace: ', sentryTrace);
-        console.log('baggage: ', baggage);
+        await new Promise<void>((resolve) => {
+          console.log('sentryTrace: ', sentryTrace);
+          console.log('baggage: ', baggage);
 
-        placeOrder.mutate({
-          headers: {
-            'sentry-trace': sentryTrace,
-            baggage: baggage ?? '',
-          },
-          data: {
-            customerId: formData.get('customerId') as string,
-            deliveryAddress: formData.get('deliveryAddress') as string,
-            items: cartItems.map((item) => ({
-              id: item.id,
-              name: item.name,
-              quantity: item.quantity,
-              price: item.price,
-            })),
-          },
+          placeOrder.mutate(
+            {
+              headers: {
+                'sentry-trace': sentryTrace ?? '',
+                baggage: baggage ?? '',
+              },
+              data: {
+                customerId: formData.get('customerId') as string,
+                deliveryAddress: formData.get('deliveryAddress') as string,
+                items: cartItems.map((item) => ({
+                  id: item.id,
+                  name: item.name,
+                  quantity: item.quantity,
+                  price: item.price,
+                })),
+              },
+            },
+            {
+              onSettled: () => resolve(),
+            }
+          );
         });
       }
     );

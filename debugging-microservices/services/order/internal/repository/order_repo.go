@@ -139,13 +139,14 @@ func (r *OrderRepository) CreateOrder(ctx context.Context, req *models.CreateOrd
 	insertOrderSpan.SetData("db.system", "postgresql")
 	insertOrderSpan.SetData("db.operation", "INSERT")
 	insertOrderSpan.SetData("db.name", "orders")
+	defer insertOrderSpan.Finish()
+
 	rows, err := tx.NamedQuery(query, order)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	insertOrderSpan.Finish()
 	if !rows.Next() {
 		err = errors.New("no order created")
 		sentry.CaptureException(err)

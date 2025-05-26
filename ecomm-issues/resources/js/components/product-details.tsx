@@ -8,6 +8,7 @@ import { motion } from 'framer-motion';
 import { Heart, Minus, Plus, ShoppingCart, Star } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
+import * as Sentry from '@sentry/react';
 
 interface ProductDetailsProps {
     product: Product;
@@ -21,8 +22,16 @@ export function ProductDetails({ product }: ProductDetailsProps) {
     const { addItem } = useCart();
 
     const handleAddToCart = () => {
-        const added = addItem(product, selectedSize, selectedColor, quantity);
-        toast.success(`${added.quantity}x ${added.selectedSize} ${added.selectedColor} ${added.name} added to cart`);
+        Sentry.startSpan({ name: 'add-to-cart' }, (span) => {
+            const added = addItem(product, selectedSize, selectedColor, quantity);
+            if (added) {
+                span.setAttribute('product_id', added.id);
+                span.setAttribute('size', selectedSize);
+                span.setAttribute('color', selectedColor);
+                span.setAttribute('quantity', quantity);
+            }
+            toast.success(`${added.quantity}x ${added.selectedSize} ${added.selectedColor} ${added.name} added to cart`);
+        });
     };
 
     return (
@@ -72,8 +81,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 <div className="space-y-4">
                     <div>
                         <h3 className="mb-2 font-medium">Size</h3>
-                        <RadioGroup value={selectedSize} onValueChange={setSelectedSize} className="flex flex-wrap gap-2">
-                            {['Extra Small', 'Small', 'Medium', 'Large', 'Extra Large'].map((size) => (
+                        <RadioGroup id="size-radio-group" value={selectedSize} onValueChange={setSelectedSize} className="flex flex-wrap gap-2">
+                            {/* {['XS', 'S', 'M', 'L', 'XL'].map((size) => ( */}
+                            {product.sizes.map((size) => (
                                 <div key={size} className="flex items-center">
                                     <RadioGroupItem value={size} id={`size-${size}`} className="peer sr-only" />
                                     <Label
@@ -89,7 +99,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
                     <div>
                         <h3 className="mb-2 font-medium">Color</h3>
-                        <RadioGroup value={selectedColor} onValueChange={setSelectedColor} className="flex flex-wrap gap-2">
+                        <RadioGroup id="color-radio-group" value={selectedColor} onValueChange={setSelectedColor} className="flex flex-wrap gap-2">
                             {product.colors.map((color) => (
                                 <div key={color} className="flex items-center">
                                     <RadioGroupItem value={color} id={`color-${color}`} className="peer sr-only" />
@@ -108,6 +118,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                         <h3 className="mb-2 font-medium">Quantity</h3>
                         <div className="flex items-center space-x-2">
                             <Button
+                                id="decrement-quantity-button"
                                 variant="outline"
                                 size="icon"
                                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -117,6 +128,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                             </Button>
                             <span className="w-8 text-center">{quantity}</span>
                             <Button
+                                id="increment-quantity-button"
                                 variant="outline"
                                 size="icon"
                                 onClick={() => setQuantity(quantity + 1)}
@@ -130,7 +142,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
                 </div>
 
                 <div className="flex flex-col gap-4 sm:flex-row">
-                    <Button className="flex-1 bg-red-600 text-white hover:bg-red-700" size="lg" onClick={handleAddToCart}>
+                    <Button id="add-to-cart-button" className="flex-1 bg-red-600 text-white hover:bg-red-700" size="lg" onClick={handleAddToCart}>
                         <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
                     </Button>
                     <Button variant="outline" size="lg" className="border-red-600 text-red-500 hover:bg-red-600/10">

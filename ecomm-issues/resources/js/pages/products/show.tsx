@@ -5,6 +5,7 @@ import { Product } from '@/types';
 import { Head } from '@inertiajs/react';
 
 export default function ProductPage({ product, relatedProducts }: { product: Product; relatedProducts: Product[] }) {
+
     return (
         <Layout>
             <Head title={`${product.name} | ErrorFix`} />

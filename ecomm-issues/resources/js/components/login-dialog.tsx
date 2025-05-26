@@ -85,7 +85,7 @@ export function LoginDialog({ open, onOpenChange }: LoginDialogProps) {
                     {errors.password && <div className="text-sm font-medium text-red-500">{errors.password}</div>}
 
                     <DialogFooter>
-                        <Button type="submit" className="w-full bg-red-600 text-white hover:bg-red-700" disabled={processing}>
+                        <Button id="login-dialog-button" type="submit" className="w-full bg-red-600 text-white hover:bg-red-700" disabled={processing}>
                             {processing ? (
                                 <>
                                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />

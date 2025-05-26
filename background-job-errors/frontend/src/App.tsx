@@ -70,6 +70,9 @@ const App: Component = () => {
         op: 'http.request',
         attributes: {
           'report.type': selectedReportType(),
+          'user': 'user@example.com',
+          'org': 'ACME',
+          'client': 'resellers',
         },
       },
       () => {

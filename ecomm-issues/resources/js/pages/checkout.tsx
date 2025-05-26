@@ -12,6 +12,7 @@ import axios from 'axios';
 import { CheckCircle, CreditCard, Lock } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import * as Sentry from '@sentry/react';
 
 type PurchaseForm = {
     email: string;
@@ -82,20 +83,31 @@ const CheckoutPage = () => {
 
         setProcessing(true);
 
-        const response = await axios.post('/purchase', data, {
-            headers: {
-                Accept: 'application/json',
-            },
+        await Sentry.startSpan({ name: 'handle-checkout' }, async (span) => {
+            span.setAttributes({
+                'itemsAtCheckout': data.items.reduce((acc, item) => acc + item.quantity, 0),
+            });
+
+            try {
+                const response = await axios.post('/purchase', data, {
+                    headers: {
+                        Accept: 'application/json',
+                    },
+                });
+
+                span.setStatus(Sentry.getSpanStatusFromHttpCode(response.status));
+                if (response.status === 200) {
+                    clearCart();
+                    setPurchaseComplete(true);
+                }
+            } catch {
+                span.setStatus(Sentry.getSpanStatusFromHttpCode(500));
+                toast.error('Error', {
+                    description: 'An unexpected error occurred during checkout.',
+                });
+            }
         });
 
-        if (response.status === 200) {
-            clearCart();
-            setPurchaseComplete(true);
-        } else {
-            toast.error('Error', {
-                description: response.data.message || 'An unexpected error occurred during checkout.',
-            });
-        }
         setProcessing(false);
     };
 
@@ -130,6 +142,7 @@ const CheckoutPage = () => {
                             <p className="text-sm text-red-300">You must be logged in to complete checkout</p>
                         </div>
                         <Button
+                            id="login-button"
                             variant="outline"
                             onClick={() => setIsLoginOpen(true)}
                             className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
@@ -260,6 +273,7 @@ const CheckoutPage = () => {
                         </div>
 
                         <Button
+                            id="checkout"
                             type="submit"
                             className="w-full bg-red-600 text-white hover:bg-red-700"
                             size="lg"

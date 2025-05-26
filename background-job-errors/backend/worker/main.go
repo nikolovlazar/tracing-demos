@@ -34,7 +34,10 @@ func processHRReport(ctx context.Context, data *employeeData) {
 			sentry.WithScope(func(scope *sentry.Scope) {
 				scope.SetLevel(sentry.LevelFatal)
 				scope.SetTag("error.type", "panic")
-				scope.SetExtra("data", data)
+				jsonData, _ := json.Marshal(data)
+				scope.SetContext("data", map[string]interface{}{
+					"raw": string(jsonData),
+				})
 				sentry.CaptureException(err)
 			})
 

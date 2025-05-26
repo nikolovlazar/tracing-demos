@@ -100,7 +100,7 @@ export default function Header() {
                         <Search className="h-5 w-5" />
                     </Button>
 
-                    <Button variant="ghost" size="icon" className="relative" onClick={() => setIsCartOpen(true)}>
+                    <Button id="cart-button" variant="ghost" size="icon" className="relative" onClick={() => setIsCartOpen(true)}>
                         <ShoppingCart className="h-5 w-5" />
                         {itemCount > 0 && (
                             <span className="text-primary-foreground absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-xs">
